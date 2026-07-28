@@ -1,0 +1,893 @@
+/* DBTN Live Traffic module styles (formerly admin/css/dbtn-admin-tab1.css) */
+
+/* ── Wrapper: forces toolbar above table regardless of parent layout ── */
+.dbtn-lt-wrapper {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	gap: 0;
+}
+
+.dbtn-lt-version {
+	margin-left: 0;
+	color: #8c8f94;
+	font-size: 11px;
+	align-self: center;
+}
+
+.dbtn-lt-url-search {
+	display: flex;
+	flex: 1 1 250px;
+	align-items: stretch;
+	min-width: 250px;
+	margin-left: auto;
+}
+
+#dbtn-lt-url-search {
+	flex: 1 1 auto;
+	width: auto;
+	min-width: 0;
+	max-width: none;
+	min-height: 30px;
+	margin: 0;
+	border-radius: 4px 0 0 4px;
+}
+
+#dbtn-lt-url-search::-webkit-search-cancel-button {
+	display: block;
+	-webkit-appearance: searchfield-cancel-button;
+	cursor: pointer;
+}
+
+#dbtn-lt-url-search-button.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	min-height: 30px;
+	margin-left: -1px;
+	padding: 0 7px;
+	border-radius: 0 4px 4px 0;
+}
+
+#dbtn-lt-url-search-button.is-active {
+	border-color: #2271b1;
+	background: #2271b1;
+	color: #fff;
+}
+
+#dbtn-lt-url-search-button .dashicons {
+	display: block;
+	width: 24px;
+	height: 24px;
+	font-size: 24px;
+	line-height: 24px;
+	transform: translateY(-1px);
+}
+
+.dbtn-lt-log-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+	margin: 12px 0;
+}
+
+.dbtn-lt-log-tab {
+	border: 1px solid #c3c4c7;
+	background: #f6f7f7;
+	padding: 6px 10px;
+	cursor: pointer;
+	border-radius: 4px;
+}
+
+.dbtn-lt-log-tab.is-active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
+.dbtn-lt-log-pre {
+	max-height: 650px;
+	overflow: auto;
+	white-space: pre-wrap;
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	padding: 10px;
+}
+
+.dbtn-lt-waf-row td {
+	padding: 8px;
+	vertical-align: top;
+}
+
+.dbtn-lt-waf-card {
+	box-sizing: border-box;
+	max-width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.dbtn-lt-waf-line {
+	display: grid;
+	grid-template-columns: 90px minmax(0, 1fr);
+	gap: 8px;
+	margin: 2px 0;
+	line-height: 1.4;
+}
+
+.dbtn-lt-waf-label {
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.dbtn-lt-waf-details {
+	margin-top: 8px;
+}
+
+.dbtn-lt-waf-details summary {
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.dbtn-lt-log-pre {
+	box-sizing: border-box;
+	max-width: 100%;
+	margin: 8px 0 0;
+	padding: 8px;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+/* ── Toolbar: horizontal row of controls ─────────────────────────── */
+#dbtn-live-traffic-toolbar {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 10px;
+	padding: 6px 0;
+	width: 100%;
+}
+
+/* ── Live / Paused status badge ──────────────────────────────────── */
+button#dbtn-lt-pause.button {
+	border-radius: 4px;
+	min-height: 30px;
+	height: 30px;
+	line-height: 26px;
+}
+
+.dbtn-lt-status-live {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	background: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
+	animation: dbtn-lt-blink 2s step-start infinite;
+}
+
+.dbtn-lt-status-paused {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	background: #fff3cd;
+	color: #856404;
+	border: 1px solid #ffeeba;
+}
+
+@keyframes dbtn-lt-blink {
+	0%,  100% { opacity: 1; }
+	50%        { opacity: 0.55; }
+}
+
+/* "Updated HH:MM:SS" — pushed to the right end of the toolbar */
+#dbtn-lt-updated {
+	color: #888;
+	font-size: 12px;
+	margin-left: auto;
+}
+
+#dbtn-lt-lines,
+#dbtn-lt-status-filter {
+	border-radius: 4px;
+	min-height: 30px;
+	height: 30px;
+	font-size: 13px;
+	line-height: 26px;
+	padding: 0px 24px 0px 8px;
+}
+
+#dbtn-lt-status-filter {
+	width: 72px;
+}
+
+#dbtn-lt-lines {
+	width: 90px;
+}
+.dbtn-lt-filter-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 13px;
+	font-weight: normal;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.dbtn-lt-filter-label input[type="checkbox"] {
+	margin: 0;
+	cursor: pointer;
+}
+
+/* ── Content area: full-width below the toolbar ──────────────────── */
+#dbtn-live-traffic-content {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
+	font-family: 'LibreBaskerville', serif;
+}
+
+/* ── Table ────────────────────────────────────────────────────────── */
+.dbtn-lt-table {
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 12px;
+	table-layout: fixed;
+}
+
+.dbtn-lt-table thead th {
+	background: none;
+	color: rgb(78, 24, 129);
+	padding: 6px 8px;
+	text-align: left;
+	font-weight: 700;
+	white-space: nowrap;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	border-bottom: 2px solid rgb(78, 24, 129);
+}
+
+.dbtn-lt-table thead th.dbtn-lt-col-bytes {
+	text-align: right;
+}
+
+.dbtn-lt-table tbody tr:nth-child(odd)  { background: #f9f9f9; }
+.dbtn-lt-table tbody tr:nth-child(even) { background: #fff; }
+
+.dbtn-lt-table tbody tr:hover { background: #e8f0fe; }
+
+.dbtn-lt-table td {
+	padding: 5px 8px;
+	vertical-align: middle;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	border-bottom: 1px solid #eee;
+}
+
+.db_col_header {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* ── Column widths ────────────────────────────────────────────────── */
+.dbtn-lt-col-time   { width: 8%; }
+.dbtn-lt-col-ip     { width: 17%; }
+.dbtn-lt-col-geo    { width: 12%; }
+.dbtn-lt-col-method { width: 4%; }
+.dbtn-lt-col-path   { width: 35%; }
+.dbtn-lt-col-status { width: 4%; }
+.dbtn-lt-col-bytes  { width: 8%; text-align: right; }
+.dbtn-lt-col-ua     { width: 12%; }
+
+/* Add content to location if it is empty */
+.dbtn-lt-col-geo:empty::before {
+	content: "no location";
+}
+
+/* ── HTTP method badges ───────────────────────────────────────────── */
+.dbtn-lt-method {
+	display: inline-block;
+	padding: 1px 5px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+.dbtn-lt-method-get    { background: #cce5ff; color: #004085; }
+.dbtn-lt-method-post   { background: #d4edda; color: #155724; }
+.dbtn-lt-method-put    { background: #fff3cd; color: #856404; }
+.dbtn-lt-method-patch  { background: #fff3cd; color: #856404; }
+.dbtn-lt-method-delete { background: #f8d7da; color: #721c24; }
+.dbtn-lt-method-head   { background: #e2e3e5; color: #383d41; }
+
+/* ── HTTP status badges ───────────────────────────────────────────── */
+.dbtn-lt-http-status {
+	display: inline-block;
+	padding: 1px 6px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 700;
+}
+.dbtn-lt-status-2xx   { background: #d4edda; color: #155724; }
+.dbtn-lt-status-3xx   { background: #cce5ff; color: #004085; }
+.dbtn-lt-status-4xx   { background: #fff3cd; color: #856404; }
+.dbtn-lt-status-5xx   { background: #f8d7da; color: #721c24; }
+.dbtn-lt-status-other { background: #e2e3e5; color: #383d41; }
+
+/* ── Error message ────────────────────────────────────────────────── */
+.dbtn-lt-error {
+	color: #721c24;
+	background: #f8d7da;
+	border: 1px solid #f5c6cb;
+	padding: 8px 12px;
+	border-radius: 4px;
+}
+
+/* ── IP code tag ──────────────────────────────────────────────────── */
+.dbtn-lt-col-ip code {
+	font-size: 11px;
+	background: transparent;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+/* ── time tag ──────────────────────────────────────────────────── */
+.dbtn-lt-table td.dbtn-lt-col-time  {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+/* ── IP tag ──────────────────────────────────────────────────── */
+.dbtn-lt-table td.dbtn-lt-col-ip {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+/* ── geo tag ──────────────────────────────────────────────────── */
+.dbtn-lt-table td.dbtn-lt-col-geo  {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+/* ── geo tag ──────────────────────────────────────────────────── */
+.dbtn-lt-table td.dbtn-lt-col-path  {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+/* ── Turnstile-validated visitor rows ────────────────────────────── */
+/* Override odd/even stripe backgrounds for confirmed-human IPs.     */
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated td {
+	background-color: #C8E8B580;
+}
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated:hover td {
+	background-color: #c3e6cb;
+}
+/* Small shield badge next to the IP to make validation scannable    */
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated .dbtn-lt-col-ip::before {
+	content: '✓ ';
+	color: #155724;
+	font-weight: 700;
+}
+
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-fukuro td {
+	background-color: #9fcf88;
+}
+
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-fukuro:hover td {
+	background-color: #8fc278;
+}
+
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-checkout td {
+	background-color: #dbeafe;
+}
+
+.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-checkout:hover td {
+	background-color: #bfdbfe;
+}
+
+/* Smaller font for referer    */
+.dbtn-lt-referer {
+
+	display: block;
+	margin-top: 2px;
+	font-size: 11px;
+	color: #666;
+	overflow-wrap: anywhere;
+}
+
+/* ── IP cell is clickable ── */
+.dbtn-lt-col-path,
+.dbtn-lt-col-ip {
+	cursor: pointer;
+	position: relative;  /* anchor for the card */
+}
+.dbtn-lt-col-path:hover,
+.dbtn-lt-col-ip:hover {
+	background-color: #e8f4fd;
+}
+
+/* ── Inline WHOIS card ── */
+.dbtn-lt-ip-card {
+	position: relative;
+	margin-top: 5px;
+	padding: 6px 22px 6px 8px;  /* right padding leaves room for close button */
+	background: #fff;
+	border: 1px solid #c3d9ef;
+	border-radius: 4px;
+	font-size: 11px;
+	line-height: 1.6;
+	color: #1d2327;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+	white-space: normal;  /* allow wrapping inside the fixed-width cell */
+	overflow-wrap: break-word;  /* replaces word-break: break-all */
+	word-break: normal;
+}
+
+.dbtn-lt-ip-close {
+	position: absolute;
+	top: 3px;
+	right: 4px;
+	background: none;
+	border: none;
+	font-size: 11px;
+	color: #888;
+	cursor: pointer;
+	padding: 0 2px;
+	line-height: 1;
+}
+.dbtn-lt-ip-close:hover {
+	color: #c0392b;
+}
+
+.dbtn-lt-ip-copied {
+	font-size: 10px;
+	color: #197741;
+	font-style: italic;
+}
+
+/* Narrow screen: stack each row vertically, no labels */
+@media (max-width: 768px) {
+	#dbtn-live-traffic-content {
+		overflow-x: hidden;
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	}
+
+	.dbtn-lt-method,
+	.dbtn-lt-http-status {
+		display: inline;
+		padding: 0;
+		border-radius: 0;
+		background: transparent;
+		text-align: left;
+	}
+
+	.dbtn-lt-table tbody td.dbtn-lt-col-status,
+	.dbtn-lt-table tbody td.dbtn-lt-col-bytes,
+	.dbtn-lt-table tbody td.dbtn-lt-col-ua,
+	.dbtn-lt-table tbody td.dbtn-lt-col-path {
+		padding-left: 8px;
+		padding-right: 8px;
+	}
+	.dbtn-lt-table thead {
+		display: none;
+	}
+
+	.dbtn-lt-table tbody {
+		display: block;
+		width: 100%;
+	}
+
+	.dbtn-lt-table tbody tr {
+		display: grid;
+		grid-template-columns: 17% 43% 40%;
+		width: 100%;
+		box-sizing: border-box;
+		margin-bottom: 5px;
+		border: none;
+	}
+
+	.dbtn-lt-table tbody td {
+		display: block;
+		width: auto;
+		box-sizing: border-box;
+		padding: 2px 20px;
+		border: none;
+		text-align: left;
+		min-width: 0;
+	}
+
+	.dbtn-lt-table tbody td.dbtn-lt-col-time,
+	.dbtn-lt-table tbody td.dbtn-lt-col-ip,
+	.dbtn-lt-table tbody td.dbtn-lt-col-geo {
+		grid-column: auto;
+		padding-left: 8px;
+		padding-right: 8px;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		overflow: visible;
+		text-overflow: clip;
+	}
+
+	.dbtn-lt-col-ip,
+	.dbtn-lt-col-bytes {
+		font-weight: 700;
+	}
+
+	.dbtn-lt-table tbody td.dbtn-lt-col-method {
+		grid-column: 1 / 2;
+		padding-left: 8px;
+		padding-right: 8px;
+	}
+
+	.dbtn-lt-table tbody td.dbtn-lt-col-path {
+		grid-column: 2 / 4;
+	}
+
+	.dbtn-lt-table tbody td.dbtn-lt-col-status,
+	.dbtn-lt-table tbody td.dbtn-lt-col-bytes,
+	.dbtn-lt-table tbody td.dbtn-lt-col-ua {
+		grid-column: auto;
+		white-space: nowrap;
+		overflow: hidden;
+		text-align: left;
+		text-overflow: ellipsis;
+	}
+
+	.dbtn-lt-table tbody td:empty:not(.dbtn-lt-col-geo) {
+		display: none;
+	}
+}
+/* ── Non-canonical Host rows ─────────────────────────────────────── */
+/* Highlights requests served through anything other than your_domain.com or www.your_domain.com. */
+.dbtn-lt-table tbody tr.dbtn-lt-row-bad-host td,
+.dbtn-lt-table tbody tr.dbtn-lt-row-bad-host.dbtn-lt-row-validated td {
+	background-color: #ffe1b3;
+}
+
+.dbtn-lt-table tbody tr.dbtn-lt-row-bad-host:hover td,
+.dbtn-lt-table tbody tr.dbtn-lt-row-bad-host.dbtn-lt-row-validated:hover td {
+	background-color: #ffd18a;
+}
+
+.dbtn-lt-table tbody tr.dbtn-lt-row-bad-host td:first-child {
+	border-left: 4px solid #d9822b;
+}
+
+.dbtn-lt-host-warning {
+	display: block;
+	margin-top: 2px;
+	font-size: 11px;
+	font-weight: 700;
+	color: #8a4b00;
+	overflow-wrap: anywhere;
+}
+
+/* ── WP-Cron report ──────────────────────────────────────────────── */
+.dbtn-lt-cron-grid {
+	display: grid;
+	grid-template-columns: minmax(145px, 0.9fr) minmax(220px, 1.2fr) minmax(360px, 3fr);
+	width: 100%;
+	border-top: 1px solid #dcdcde;
+	border-left: 1px solid #dcdcde;
+	background: #fff;
+}
+
+.dbtn-lt-cron-head {
+	padding: 6px 8px;
+	font-weight: 700;
+	color: rgb(78, 24, 129);
+	border-right: 1px solid #dcdcde;
+	border-bottom: 2px solid rgb(78, 24, 129);
+	background: #fff;
+}
+
+.dbtn-lt-cron-row {
+	display: contents;
+}
+
+.dbtn-lt-cron-cell {
+	padding: 7px 8px;
+	vertical-align: top;
+	border-right: 1px solid #dcdcde;
+	border-bottom: 1px solid #eee;
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+.dbtn-lt-cron-row:nth-of-type(odd) .dbtn-lt-cron-cell {
+	background: #f9f9f9;
+}
+
+.dbtn-lt-cron-time {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.dbtn-lt-cron-status-badge {
+	display: inline-block;
+	padding: 2px 7px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1.4;
+	white-space: normal;
+}
+
+.dbtn-lt-cron-status-success {
+	background: #d4edda;
+	color: #155724;
+}
+
+.dbtn-lt-cron-status-error {
+	background: #f8d7da;
+	color: #721c24;
+}
+
+.dbtn-lt-cron-status-unknown {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.dbtn-lt-cron-pre {
+	box-sizing: border-box;
+	max-width: 100%;
+	margin: 0;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	font-size: 12px;
+	line-height: 1.45;
+	background: transparent;
+	border: none;
+	padding: 0;
+}
+
+.dbtn-lt-muted {
+	color: #8c8f94;
+}
+
+@media (max-width: 768px) {
+	.dbtn-lt-cron-grid {
+		display: block;
+		border: none;
+		background: transparent;
+	}
+
+	.dbtn-lt-cron-head {
+		display: none;
+	}
+
+	.dbtn-lt-cron-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		margin-bottom: 8px;
+		border: 1px solid #dcdcde;
+		background: #fff;
+	}
+
+	.dbtn-lt-cron-cell {
+		border: none;
+		border-bottom: 1px solid #eee;
+	}
+
+	.dbtn-lt-cron-cell.dbtn-lt-cron-details {
+		grid-column: 1 / 3;
+		border-bottom: none;
+	}
+}
+
+/* ── IP traffic lookup ───────────────────────────────────────────── */
+.dbtn-lt-ip-card-actions {
+	margin-top: 6px;
+}
+
+.dbtn-lt-ip-card-actions .button-small {
+	min-height: 22px;
+	line-height: 20px;
+	padding: 0 6px;
+	font-size: 11px;
+}
+
+.dbtn-lt-ip-traffic-heading {
+	margin: 0;
+	padding: 0 10px;
+	background: #fff;
+	border: 1px solid #c3d9ef;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+}
+
+.dbtn-lt-ip-traffic-note {
+	color: #666;
+	font-size: 12px;
+	font-weight: 400;
+	margin-left: 20px;
+}
+
+/* ── Visitors report ──────────────────────────────────────────────── */
+.dbtn-lt-visitors-table {
+	max-width: 520px;
+}
+
+.dbtn-lt-visitors-date {
+	width: 70%;
+}
+
+.dbtn-lt-visitors-count {
+	width: 30%;
+	text-align: right;
+}
+
+.dbtn-lt-visitors-sort {
+	appearance: none;
+	margin: 0;
+	padding: 0 18px 0 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+	position: relative;
+}
+
+.dbtn-lt-visitors-count .dbtn-lt-visitors-sort {
+	float: right;
+}
+
+.dbtn-lt-visitors-sort::after {
+	content: "";
+	position: absolute;
+	right: 2px;
+	top: 50%;
+	margin-top: -2px;
+	border: 4px solid transparent;
+	opacity: 0.3;
+}
+
+.dbtn-lt-visitors-sort.is-sorted-asc::after {
+	margin-top: -6px;
+	border-bottom-color: currentColor;
+	opacity: 1;
+}
+
+.dbtn-lt-visitors-sort.is-sorted-desc::after {
+	margin-top: -2px;
+	border-top-color: currentColor;
+	opacity: 1;
+}
+
+/* ── Log downloads ───────────────────────────────────────────────── */
+.dbtn-lt-downloads {
+	max-width: 900px;
+}
+
+.dbtn-lt-downloads-path {
+	margin: 0 0 10px;
+}
+
+.dbtn-lt-download-table .dbtn-lt-download-size {
+	width: 120px;
+	text-align: right;
+}
+
+.dbtn-lt-download-table .dbtn-lt-download-modified {
+	width: 190px;
+}
+
+.dbtn-lt-download-table .dbtn-lt-download-action {
+	width: 40px;
+	padding-right: 8px;
+	padding-left: 8px;
+	text-align: center;
+}
+
+.dbtn-lt-download-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 30px;
+	height: 30px;
+	min-width: 30px;
+	min-height: 30px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	color: #50575e;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.dbtn-lt-download-button .dbtn-icon-download {
+	display: block;
+	width: 26px;
+	height: 26px;
+	flex: 0 0 26px;
+}
+
+.dbtn-lt-download-button:hover,
+.dbtn-lt-download-button:focus {
+	color: #2271b1;
+}
+
+.dbtn-lt-download-button:focus {
+	box-shadow: none;
+	outline: none;
+}
+
+.dbtn-lt-download-button:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.dbtn-lt-copy-ip-traffic {
+	background: transparent;
+	border: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: 10px;
+	color: #444444;
+	cursor: pointer;
+}
+
+.copy-back-sheet {
+	fill: #f0efec;
+}
+
+.copy-front-sheet {
+	fill: #faf9f6;
+}
+
+.dbtn-lt-copy-ip-traffic:hover {
+	color: #001f3f;
+}
+
+.dbtn-lt-copy-ip-traffic:hover svg {
+	--stroke-width: 1.8;
+}
+
+.dbtn-lt-copy-ip-traffic:hover .copy-front-sheet {
+	fill: #eef3f8;
+}
+
+.dbtn-lt-copy-ip-traffic:hover .copy-back-sheet {
+	fill: #e2e8ef;
+}
+
+.dbtn-lt-copy-ip-traffic svg {
+	width: 24px;
+	height: 24px;
+}
