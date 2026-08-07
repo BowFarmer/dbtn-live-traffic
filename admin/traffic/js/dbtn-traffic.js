@@ -29,6 +29,10 @@ jQuery( document ).ready(
 		let loadedReports          = {};
 		let lastVisitorCountFetch  = 0;
 		let urlSearchTerm          = '';
+		let ipHeaderSortActive     = false;
+		let pathHeaderSortActive   = false;
+		let uaHeaderSortActive     = false;
+		let geoHeaderSortActive    = false;
 		const visitorCountInterval = 60000;
 
 		const $content            = $( cfg.replace_obj );
@@ -149,9 +153,32 @@ jQuery( document ).ready(
 
 		function setStatusPausedForUrlTraffic() {
 			$statusBadge
-			.removeClass( 'dbtn-lt-status-live' )
-			.addClass( 'dbtn-lt-status-paused' )
-			.html( '&#9646;&#9646; URL TRAFFIC' );
+				.removeClass( 'dbtn-lt-status-live' )
+				.addClass( 'dbtn-lt-status-paused' )
+				.html( '&#9646;&#9646; URL TRAFFIC' );
+		}
+
+		function resetLiveTrafficSorting() {
+			ipHeaderSortActive   = false;
+			pathHeaderSortActive = false;
+			uaHeaderSortActive   = false;
+			geoHeaderSortActive  = false;
+
+			$content.find( 'th.db_col_header.dbtn-lt-col-ip' )
+				.text( 'IP' )
+				.removeAttr( 'aria-sort' );
+
+			$content.find( 'th.db_col_header.dbtn-lt-col-path' )
+				.text( 'Path' )
+				.removeAttr( 'aria-sort' );
+
+			$content.find( 'th.db_col_header.dbtn-lt-col-ua' )
+				.text( 'Browser / Bot' )
+				.removeAttr( 'aria-sort' );
+
+			$content.find( 'th.db_col_header.dbtn-lt-col-geo' )
+				.text( 'Location' )
+				.removeAttr( 'aria-sort' );
 		}
 
 		function statusMatchesFilter(status, filter) {
@@ -327,7 +354,7 @@ jQuery( document ).ready(
 							throw new Error( 'Missing new_content in REST response.' );
 						}
 
-						if (activeLogTab !== 'live') {
+						if (activeLogTab !== 'live' || paused) {
 							return;
 						}
 
@@ -412,6 +439,64 @@ jQuery( document ).ready(
 				);
 		}
 
+		function addIpTrafficSorting() {
+			const $table = $content.find( '.dbtn-lt-ip-traffic-table' );
+		
+			if ( ! $table.length ) {
+				return;
+			}
+		
+			const sortColumns = {
+				'.dbtn-lt-col-time': 'text',
+				'.dbtn-lt-col-path': 'text',
+				'.dbtn-lt-col-bytes': 'number'
+			};
+		
+			Object.entries( sortColumns ).forEach(
+				function ( [selector, type] ) {
+					const $header = $table.find( selector );
+		
+					if ( ! $header.length ) {
+						return;
+					}
+		
+					let direction = 'desc';
+		
+					$header.css( 'cursor', 'pointer' );
+		
+					$header.on(
+						'click',
+						function () {
+							const $tbody = $table.find( 'tbody' );
+							const rows = $tbody.find( 'tr' ).get();
+		
+							rows.sort(
+								function (a, b) {
+									const aValue = $( a ).find( selector ).text().trim();
+									const bValue = $( b ).find( selector ).text().trim();
+		
+									let comparison;
+		
+									if ( type === 'number' ) {
+										comparison = ( parseInt( aValue, 10 ) || 0 ) -
+											( parseInt( bValue, 10 ) || 0 );
+									} else {
+										comparison = aValue.localeCompare( bValue );
+									}
+		
+									return direction === 'asc' ? comparison : -comparison;
+								}
+							);
+		
+							$tbody.append( rows );
+		
+							direction = direction === 'asc' ? 'desc' : 'asc';
+						}
+					);
+				}
+			);
+		}
+
 		function showIpTraffic(ip) {
 			if ( ! ip) {
 				return;
@@ -465,6 +550,7 @@ jQuery( document ).ready(
 						}
 
 						$content.html( response.new_content );
+						addIpTrafficSorting();
 						addCopyTrafficButton();
 						applyFilters();
 						const now = new Date();
@@ -629,6 +715,7 @@ jQuery( document ).ready(
 					$pauseBtn.text( 'Resume' );
 					setStatusPaused();
 				} else {
+					resetLiveTrafficSorting();
 					$pauseBtn.text( 'Pause' );
 					setStatusLive();
 					fetchTraffic();
@@ -766,7 +853,73 @@ jQuery( document ).ready(
 
 		$( document ).on(
 			'click',
-			'.dbtn-lt-col-path',
+			'th.db_col_header.dbtn-lt-col-path',
+			function () {
+				if (activeLogTab !== 'live') {
+					return;
+				}
+
+				const $header = $( this );
+				const $table  = $header.closest( '.dbtn-lt-table' );
+
+				if ( ! $table.length || $table.hasClass( 'dbtn-lt-ip-traffic-table' )) {
+					return;
+				}
+
+				if (pathHeaderSortActive) {
+					resetLiveTrafficSorting();
+
+					if (paused) {
+						$pauseBtn.trigger( 'click' );
+					} else {
+						fetchTraffic();
+					}
+
+					return;
+				}
+
+				if ( ! paused) {
+					$pauseBtn.trigger( 'click' );
+				}
+
+				const $tbody = $table.find( 'tbody' );
+				const rows   = $tbody.find( 'tr' ).get();
+
+				rows.sort(
+					function (a, b) {
+						const $aCell = $( a ).find( 'td.dbtn-lt-col-path' );
+						const $bCell = $( b ).find( 'td.dbtn-lt-col-path' );
+						const aPath  = $aCell.attr( 'title' ) || $aCell.clone().children().remove().end().text().trim();
+						const bPath  = $bCell.attr( 'title' ) || $bCell.clone().children().remove().end().text().trim();
+
+						return aPath.localeCompare( bPath, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						} );
+					}
+				);
+
+				ipHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-ip' )
+					.text( 'IP' )
+					.removeAttr( 'aria-sort' );
+				uaHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-ua' )
+					.text( 'Browser / Bot' )
+					.removeAttr( 'aria-sort' );
+				geoHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-geo' )
+					.text( 'Location' )
+					.removeAttr( 'aria-sort' );
+				$tbody.append( rows );
+				$header.text( 'Path-sorted' ).attr( 'aria-sort', 'ascending' );
+				pathHeaderSortActive = true;
+			}
+		);
+
+		$( document ).on(
+			'click',
+			'td.dbtn-lt-col-path',
 			function () {
 				const $td = $( this );
 				showUrlTraffic( $td.attr( 'title' ) || $td.text().trim().replace( /\t+/g, '\n' ) );
@@ -801,7 +954,205 @@ jQuery( document ).ready(
 
 		$( document ).on(
 			'click',
-			'.dbtn-lt-col-ip',
+			'th.db_col_header.dbtn-lt-col-ip',
+			function () {
+				if (activeLogTab !== 'live') {
+					return;
+				}
+
+				const $header = $( this );
+				const $table  = $header.closest( '.dbtn-lt-table' );
+
+				if ( ! $table.length || $table.hasClass( 'dbtn-lt-ip-traffic-table' )) {
+					return;
+				}
+
+				if (ipHeaderSortActive) {
+					resetLiveTrafficSorting();
+
+					if (paused) {
+						$pauseBtn.trigger( 'click' );
+					} else {
+						fetchTraffic();
+					}
+
+					return;
+				}
+
+				if ( ! paused) {
+					$pauseBtn.trigger( 'click' );
+				}
+
+				const $tbody = $table.find( 'tbody' );
+				const rows   = $tbody.find( 'tr' ).get();
+
+				rows.sort(
+					function (a, b) {
+						const $aCell = $( a ).find( 'td.dbtn-lt-col-ip' );
+						const $bCell = $( b ).find( 'td.dbtn-lt-col-ip' );
+						const aIp    = extractIp( $aCell.attr( 'title' ) || $aCell.text() );
+						const bIp    = extractIp( $bCell.attr( 'title' ) || $bCell.text() );
+
+						return aIp.localeCompare( bIp, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						} );
+					}
+				);
+
+				$tbody.append( rows );
+				pathHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-path' )
+					.text( 'Path' )
+					.removeAttr( 'aria-sort' );
+				uaHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-ua' )
+					.text( 'Browser / Bot' )
+					.removeAttr( 'aria-sort' );
+				geoHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-geo' )
+					.text( 'Location' )
+					.removeAttr( 'aria-sort' );
+				$header.text( 'IP-sorted' ).attr( 'aria-sort', 'ascending' );
+				ipHeaderSortActive = true;
+			}
+		);
+
+		$( document ).on(
+			'click',
+			'th.db_col_header.dbtn-lt-col-ua',
+			function () {
+				if (activeLogTab !== 'live') {
+					return;
+				}
+
+				const $header = $( this );
+				const $table  = $header.closest( '.dbtn-lt-table' );
+
+				if ( ! $table.length || $table.hasClass( 'dbtn-lt-ip-traffic-table' )) {
+					return;
+				}
+
+				if (uaHeaderSortActive) {
+					resetLiveTrafficSorting();
+
+					if (paused) {
+						$pauseBtn.trigger( 'click' );
+					} else {
+						fetchTraffic();
+					}
+
+					return;
+				}
+
+				if ( ! paused) {
+					$pauseBtn.trigger( 'click' );
+				}
+
+				const $tbody = $table.find( 'tbody' );
+				const rows   = $tbody.find( 'tr' ).get();
+
+				rows.sort(
+					function (a, b) {
+						const $aCell = $( a ).find( 'td.dbtn-lt-col-ua' );
+						const $bCell = $( b ).find( 'td.dbtn-lt-col-ua' );
+						const aUa    = $aCell.text().trim();
+						const bUa    = $bCell.text().trim();
+
+						return aUa.localeCompare( bUa, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						} );
+					}
+				);
+
+				$tbody.append( rows );
+				ipHeaderSortActive   = false;
+				pathHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-ip' )
+					.text( 'IP' )
+					.removeAttr( 'aria-sort' );
+				$content.find( 'th.db_col_header.dbtn-lt-col-path' )
+					.text( 'Path' )
+					.removeAttr( 'aria-sort' );
+				geoHeaderSortActive = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-geo' )
+					.text( 'Location' )
+					.removeAttr( 'aria-sort' );
+				$header.text( 'Browser/Bot-sorted' ).attr( 'aria-sort', 'ascending' );
+				uaHeaderSortActive = true;
+			}
+		);
+
+		$( document ).on(
+			'click',
+			'th.db_col_header.dbtn-lt-col-geo',
+			function () {
+				if (activeLogTab !== 'live') {
+					return;
+				}
+
+				const $header = $( this );
+				const $table  = $header.closest( '.dbtn-lt-table' );
+
+				if ( ! $table.length || $table.hasClass( 'dbtn-lt-ip-traffic-table' )) {
+					return;
+				}
+
+				if (geoHeaderSortActive) {
+					resetLiveTrafficSorting();
+
+					if (paused) {
+						$pauseBtn.trigger( 'click' );
+					} else {
+						fetchTraffic();
+					}
+
+					return;
+				}
+
+				if ( ! paused) {
+					$pauseBtn.trigger( 'click' );
+				}
+
+				const $tbody = $table.find( 'tbody' );
+				const rows   = $tbody.find( 'tr' ).get();
+
+				rows.sort(
+					function (a, b) {
+						const $aCell = $( a ).find( 'td.dbtn-lt-col-geo' );
+						const $bCell = $( b ).find( 'td.dbtn-lt-col-geo' );
+						const aGeo   = $aCell.text().trim() || 'no location';
+						const bGeo   = $bCell.text().trim() || 'no location';
+
+						return aGeo.localeCompare( bGeo, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						} );
+					}
+				);
+
+				$tbody.append( rows );
+				ipHeaderSortActive   = false;
+				pathHeaderSortActive = false;
+				uaHeaderSortActive   = false;
+				$content.find( 'th.db_col_header.dbtn-lt-col-ip' )
+					.text( 'IP' )
+					.removeAttr( 'aria-sort' );
+				$content.find( 'th.db_col_header.dbtn-lt-col-path' )
+					.text( 'Path' )
+					.removeAttr( 'aria-sort' );
+				$content.find( 'th.db_col_header.dbtn-lt-col-ua' )
+					.text( 'Browser / Bot' )
+					.removeAttr( 'aria-sort' );
+				$header.text( 'Location-sorted' ).attr( 'aria-sort', 'ascending' );
+				geoHeaderSortActive = true;
+			}
+		);
+
+		$( document ).on(
+			'click',
+			'td.dbtn-lt-col-ip',
 			function (e) {
 				const $td = $( this );
 

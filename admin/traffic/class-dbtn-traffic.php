@@ -51,7 +51,7 @@ final class DBTN_Traffic {
 	/**
 	 * Version for the Traffic Module.
 	 */
-	public const VERSION = '2026.07.26';
+	public const VERSION = '2026.08.06';
 
 	/**
 	 * REST namespace for all module routes.
@@ -188,9 +188,9 @@ final class DBTN_Traffic {
 							<option value="50">50</option>
 							<option value="100">100</option>
 							<option value="200">200</option>
-							<option value="500">500</option>
+							<option value="500" selected>500</option>
 							<option value="1000">1,000</option>
-							<option value="2500" selected>2,500</option>
+							<option value="2500">2,500</option>
 						</select>
 						<span id="dbtn-db-version">
 							GeoLite2-City.mmdb version <?php echo esc_html( $geo_version ?? 'not installed' ); ?>
@@ -269,7 +269,7 @@ final class DBTN_Traffic {
 		);
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$lt_lines = isset( $_GET['lt_lines'] ) ? absint( $_GET['lt_lines'] ) : 2500;
+		$lt_lines = isset( $_GET['lt_lines'] ) ? absint( $_GET['lt_lines'] ) : 500;
 
 		wp_localize_script(
 			'dbtn-traffic',

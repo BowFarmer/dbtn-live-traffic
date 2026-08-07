@@ -3,7 +3,7 @@
  * Plugin Name:       DBTN Live Traffic
  * Plugin URI:        
  * Description:       Live Traffic admin panel with Cloudflare Turnstile visitor validation. Standalone version for WPMU Dev sites.
- * Version:           1.0.14
+ * Version:           1.0.15
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Daniel Voran
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-define( 'DBTN_LT_VERSION',    '1.0.14' );
+define( 'DBTN_LT_VERSION',    '1.0.15' );
 define( 'DBTN_LT_PLUGIN_FILE', __FILE__ );
 define( 'DBTN_LT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DBTN_LT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
