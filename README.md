@@ -1,12 +1,12 @@
 # DBTN Live Traffic
 
-Version 1.0.14
+Version 1.0.15
 
 DBTN Live Traffic is a standalone WordPress plugin that provides a real-time
 server-log dashboard, Cloudflare Turnstile visitor validation, daily
-validated-visitor counts, and local MaxMind GeoLite2 City lookups. It is
-designed for WPMU Dev-style hosting environments without requiring the full
-DBTN Subscriber plugin.
+validated-visitor counts, secure log downloads, and local MaxMind GeoLite2
+City lookups. It is designed for WPMU Dev-style hosting environments without
+requiring the full DBTN Subscriber plugin.
 
 ## Features
 
@@ -20,13 +20,20 @@ DBTN Subscriber plugin.
   keeping the display populated while the new `access.log` is still short.
 - Filters static assets, the current administrator's traffic, validation REST
   requests, and HTTP status groups (2xx, 3xx, and 4xx).
+- Filters the displayed rows by a case-insensitive full-URL search.
 - Displays request time, IP or known WordPress username, GeoIP location,
-  request path, response status, response size, and a summarized user agent.
+  method, request path and referrer, response status, response size and request
+  duration, and a summarized browser or bot user agent.
 - Highlights Turnstile-validated visitors and flags non-canonical hostnames.
+- Sorts the visible rows by IP, path, browser/bot, or location when the
+  corresponding column header is selected.
 - Lets administrators inspect recent requests from a selected IP.
 - Lets administrators inspect or search recent requests for a URL path;
   query strings are ignored when matching non-root paths.
-- Provides a browser-side IP information card and copy-IP action.
+- Copies the visible IP- or URL-specific traffic rows to the clipboard as
+  tab-separated data.
+- Provides a browser-side IP information card and copy-IP action using
+  `ipinfo.io`.
 
 ### Log reports
 
@@ -39,15 +46,26 @@ DBTN Subscriber plugin.
 | WAF Log | `waf.log` | Recent ModSecurity JSON events rendered as readable cards |
 | WP-Cron | `wp-cron.log` | Recent cron runs grouped by timestamp, status, and details |
 | Visitors | WordPress options | Latest 100 daily validated-human counts; shown only when Turnstile is configured |
+| Download | Configured logs directory | Readable files with name, size, modified time, and a download action |
 
 Report tabs can be refreshed manually without reloading the admin page.
+
+### Secure log downloads
+
+- Lists readable regular files directly inside the configured logs directory.
+- Shows each file's name, size, and last-modified time.
+- Streams the selected file through WordPress instead of exposing the logs
+  directory as a public URL.
+- Requires the `manage_options` capability and a valid per-download nonce.
+- Rejects directory traversal, nested paths, missing files, unreadable files,
+  and files that resolve outside the configured logs directory.
 
 ### Cloudflare Turnstile visitor validation
 
 - Loads the invisible Turnstile client on public pages when a site key is
   configured; server-side validation also requires the secret key.
-- Defers the first challenge until visitor interaction to minimize front-end
-  performance impact.
+- Defers the first challenge until visitor interaction, with a three-second
+  fallback for visitors who do not interact.
 - Stores validated IPs in WordPress transients for seven days.
 - Issues a signed, HttpOnly, SameSite=Lax `dbtn_human` grant cookie after a
   successful challenge.
@@ -160,11 +178,15 @@ All admin routes require the `manage_options` capability.
 | GET | `/dbtn/v2/admin/waf-log` | Administrator | Return the WAF report |
 | GET | `/dbtn/v2/admin/wp-cron` | Administrator | Return the WP-Cron report |
 | GET | `/dbtn/v2/admin/visitors` | Administrator; Turnstile configured | Return daily validated-visitor counts |
+| GET | `/dbtn/v2/admin/downloads` | Administrator | List readable files in the configured logs directory |
+
+Actual file downloads use WordPress's authenticated `admin-post.php` handler
+with the `dbtn_traffic_download` action and a download nonce.
 
 ## File structure
 
 The following map lists the plugin's first-party files that are loaded or
-served by version 1.0.14. The `vendor/` directory contains bundled third-party
+served by version 1.0.15. The `vendor/` directory contains bundled third-party
 Composer dependencies and is summarized separately.
 
 ```text
@@ -182,9 +204,9 @@ dbtn-live-traffic/
 │       ├── README.md
 │       │   Internal Traffic module documentation
 │       ├── class-dbtn-traffic.php
-│       │   Dashboard shell, tabs, toolbar, and asset loading
+│       │   Dashboard shell, tabs, toolbar, asset loading, and secure downloads
 │       ├── class-dbtn-traffic-rest.php
-│       │   Administrator REST routes and access-log table rendering
+│       │   Administrator REST routes, tables, reports, and download listing
 │       ├── class-dbtn-traffic-log-reader.php
 │       │   Access-log parsing, tailing, user-agent summaries, and statuses
 │       ├── class-dbtn-traffic-report-403-404.php
@@ -204,7 +226,7 @@ dbtn-live-traffic/
 │       │       Dashboard and report styles
 │       └── js/
 │           └── dbtn-traffic.js
-│               Polling, tabs, filters, searches, detail views, and sorting
+│               Polling, tabs, filters, searches, sorting, details, and copying
 ├── assets/
 │   ├── css/
 │   │   └── dbtn-credential-validation.css
@@ -259,5 +281,6 @@ dbtn-live-traffic/
 
 ## Code quality
 
-Version 1.0.14 has been verified against PHPStan level 8 and the WordPress
-PHPCS coding standards.
+The first-party PHP source uses strict types, WordPress capability and nonce
+checks for administrator actions, and WordPress escaping and sanitization APIs
+at input and output boundaries.
