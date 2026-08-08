@@ -7,6 +7,48 @@ server-log dashboard, Cloudflare Turnstile visitor validation, daily
 validated-visitor counts, secure log downloads, and local MaxMind GeoLite2
 City lookups. It is designed solely for WPMU Dev hosting environments.
 
+## Screenshots
+
+### Live Traffic dashboard
+
+![Live Traffic dashboard](docs/LiveTraffic.webp)
+
+The Live Traffic panel displays parsed access-log entries with location,
+status, duration, browser information, and sorting/filtering controls.
+
+### IP inspection
+
+![IP details card](docs/LiveTraffic-IP-Details.webp)
+
+Clicking an IP displays additional information about the address.
+
+![IP traffic list](docs/LiveTraffic-IP-List.webp)
+
+Administrators can view recent traffic from a specific IP address.
+
+### Sorting and filtering
+
+![Sorted IP traffic](docs/LiveTraffic-IP-Sorted.webp)
+
+Traffic rows can be sorted by IP, path, browser/bot, or location.
+
+### Log reports
+
+![403-404 report](docs/LiveTraffic-403-404.webp)
+
+The 403-404 tab summarizes blocked and missing requests from the previous day.
+
+![WAF report](docs/LiveTraffic-WAF.webp)
+
+The WAF tab displays recent ModSecurity events in a readable format.
+
+### Secure downloads
+
+![Log downloads](docs/LiveTraffic-download.webp)
+
+The Download tab lists available log files and streams downloads through
+WordPress authentication.
+
 ## Features
 
 ### Live Traffic dashboard
