@@ -5,7 +5,11 @@ Version 1.0.15
 DBTN Live Traffic is a standalone WordPress plugin that provides a real-time
 server-log dashboard, Cloudflare Turnstile visitor validation, daily
 validated-visitor counts, secure log downloads, and local MaxMind GeoLite2
-City lookups. It is designed solely for WPMU Dev hosting environments.
+City lookups.
+
+It is designed solely for WPMU DEV hosting environments and single-site
+WordPress installations. WordPress Multisite is not currently supported because
+server logs may contain traffic from multiple sites in the same network.
 
 ## Screenshots
 
@@ -162,6 +166,8 @@ values are used server-side and are not exposed to public visitors.
   updates
 - WordPress cron, outbound HTTPS, and a writable `GeoLite2/` directory for
   automatic database updates
+- A single-site WordPress installation
+- WordPress Multisite is not currently supported
 
 The client-IP resolver prefers `CF-Connecting-IP` and falls back to
 `REMOTE_ADDR`. Configure the web server or trusted proxy layer so visitors
