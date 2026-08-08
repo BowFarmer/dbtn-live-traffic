@@ -1,2 +1,11 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+/docs/ export-ignore
+/phpstan.neon export-ignore
+/phpstan-bootstrap.php export-ignore
+/vendor/phpstan/ export-ignore
+/vendor/php-stubs/ export-ignore
+/vendor/bin/phpstan export-ignore
+/composer.json export-ignore
+/composer.lock export-ignore

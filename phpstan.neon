@@ -1,0 +1,17 @@
+parameters:
+    level: 8
+    treatPhpDocTypesAsCertain: false
+
+    paths:
+        - admin
+        - includes
+
+    excludePaths:
+        - vendor/
+
+    bootstrapFiles:
+        - vendor/autoload.php
+        - phpstan-bootstrap.php
+
+    scanFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
