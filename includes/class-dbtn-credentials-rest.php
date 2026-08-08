@@ -68,7 +68,8 @@ final class DBTN_Credentials_REST {
 	/**
 	 * Verify a browser-generated token with the entered Turnstile secret.
 	 *
-	 * @param WP_REST_Request<array<string, mixed>> $request REST request.
+	 * @param WP_REST_Request $request REST request.
+	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request REST request.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function validate_turnstile( WP_REST_Request $request ): WP_REST_Response|WP_Error {
@@ -131,7 +132,8 @@ final class DBTN_Credentials_REST {
 	/**
 	 * Make an authenticated request to MaxMind's GeoLite2 download endpoint.
 	 *
-	 * @param WP_REST_Request<array<string, mixed>> $request REST request.
+	 * @param WP_REST_Request $request REST request.
+	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request REST request.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function validate_maxmind( WP_REST_Request $request ): WP_REST_Response|WP_Error {

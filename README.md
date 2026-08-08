@@ -327,3 +327,6 @@ dbtn-live-traffic/
 The first-party PHP source uses strict types, WordPress capability and nonce
 checks for administrator actions, and WordPress escaping and sanitization APIs
 at input and output boundaries.
+
+The codebase is analyzed with PHPStan at level 8 using WordPress stubs and
+follows WordPress Coding Standards through PHPCS.
