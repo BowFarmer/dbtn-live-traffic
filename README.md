@@ -9,6 +9,8 @@ City lookups. It is designed solely for WPMU Dev hosting environments.
 
 ## Screenshots
 
+The following screenshots show the main administrator features of DBTN Live Traffic.
+
 ### Live Traffic dashboard
 
 ![Live Traffic dashboard](docs/LiveTraffic.webp)
