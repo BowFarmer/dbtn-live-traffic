@@ -235,7 +235,7 @@ with the `dbtn_traffic_download` action and a download nonce.
 ## File structure
 
 The following map lists the plugin's first-party files that are loaded or
-served by version 1.0.15. The `vendor/` directory contains bundled third-party
+served by version 1.0.16. The `vendor/` directory contains bundled third-party
 Composer dependencies and is summarized separately.
 
 ```text
