@@ -7,7 +7,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'dev' => true,
+        'dev' => false,
     ),
     'versions' => array(
         '__root__' => array(
@@ -54,24 +54,6 @@
             'install_path' => __DIR__ . '/../maxmind/web-service-common',
             'aliases' => array(),
             'dev_requirement' => false,
-        ),
-        'php-stubs/wordpress-stubs' => array(
-            'pretty_version' => 'v7.0.1',
-            'version' => '7.0.1.0',
-            'reference' => '4d0cc9d5c4efd2a46f8c53a40c38f1679a4194b6',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../php-stubs/wordpress-stubs',
-            'aliases' => array(),
-            'dev_requirement' => true,
-        ),
-        'phpstan/phpstan' => array(
-            'pretty_version' => '2.2.8',
-            'version' => '2.2.8.0',
-            'reference' => 'e285254e60f33c21902efef4a926ca0987c06804',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../phpstan/phpstan',
-            'aliases' => array(),
-            'dev_requirement' => true,
         ),
     ),
 );

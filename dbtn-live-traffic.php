@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name:       DBTN Live Traffic
- * Plugin URI:        
+ * Plugin URI:
  * Description:       Live Traffic admin panel with Cloudflare Turnstile visitor validation. Standalone version for WPMU Dev sites.
  * Version:           1.0.15
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Daniel Voran
- * Author URI:        
+ * Author URI:
  * License:           GPL-2.0-or-later
  * Text Domain:       dbtn-live-traffic
  *
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-define( 'DBTN_LT_VERSION',    '1.0.15' );
+define( 'DBTN_LT_VERSION', '1.0.15' );
 define( 'DBTN_LT_PLUGIN_FILE', __FILE__ );
 define( 'DBTN_LT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DBTN_LT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -46,11 +46,11 @@ add_action(
 	function (): void {
 		$opts = get_option( 'dbtn_lt_settings', array() );
 
-		$site_key   = is_array( $opts ) && ! empty( $opts['turnstile_site_key'] )
+		$site_key            = is_array( $opts ) && ! empty( $opts['turnstile_site_key'] )
 			? (string) $opts['turnstile_site_key'] : '';
-		$secret_key = is_array( $opts ) && ! empty( $opts['turnstile_secret_key'] )
+		$secret_key          = is_array( $opts ) && ! empty( $opts['turnstile_secret_key'] )
 			? (string) $opts['turnstile_secret_key'] : '';
-		$maxmind_account_id = is_array( $opts ) && ! empty( $opts['maxmind_account_id'] )
+		$maxmind_account_id  = is_array( $opts ) && ! empty( $opts['maxmind_account_id'] )
 			? (string) $opts['maxmind_account_id'] : '';
 		$maxmind_license_key = is_array( $opts ) && ! empty( $opts['maxmind_license_key'] )
 			? (string) $opts['maxmind_license_key'] : '';
@@ -121,7 +121,7 @@ add_action(
 		if ( is_admin() ) {
 			new DBTN_LT_Admin();
 		}
-		
+
 		// Make sure that DBTN_Geoip_Update is initiated in admin and wp_doing_cron.
 		if ( is_admin() || wp_doing_cron() ) {
 			\dbtn\Support\DBTN_Geoip_Update::init();
