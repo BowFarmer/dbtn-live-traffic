@@ -3,7 +3,7 @@
  * Plugin Name:       DBTN Live Traffic
  * Plugin URI:
  * Description:       Live Traffic admin panel with Cloudflare Turnstile visitor validation. Standalone version for WPMU Dev sites.
- * Version:           1.0.15
+ * Version:           1.0.16
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Daniel Voran
@@ -125,6 +125,38 @@ add_action(
 		// Make sure that DBTN_Geoip_Update is initiated in admin and wp_doing_cron.
 		if ( is_admin() || wp_doing_cron() ) {
 			\dbtn\Support\DBTN_Geoip_Update::init();
+		}
+	}
+);
+
+// ── Disable activation on multisites ────────────────────────────────────────────
+
+register_activation_hook( __FILE__, 'dbtn_live_traffic_activate' );
+
+function dbtn_live_traffic_activate( bool $network_wide = false ): void {
+	if ( is_multisite() || $network_wide ) {
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+
+		wp_die(
+			esc_html__(
+				'DBTN Live Traffic does not support WordPress Multisite installations.',
+				'dbtn-live-traffic'
+			)
+		);
+	}
+}
+
+add_action(
+	'admin_notices',
+	function (): void {
+		if ( get_transient( 'dbtn_live_traffic_multisite_notice' ) ) {
+			delete_transient( 'dbtn_live_traffic_multisite_notice' );
+
+			echo '<div class="notice notice-error"><p>';
+			echo esc_html(
+				'DBTN Live Traffic does not support WordPress Multisite installations.'
+			);
+			echo '</p></div>';
 		}
 	}
 );
