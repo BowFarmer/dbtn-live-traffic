@@ -1,6 +1,6 @@
 # DBTN Live Traffic
 
-Version 1.0.15
+Version 1.0.16
 
 DBTN Live Traffic is a standalone WordPress plugin that provides a real-time
 server-log dashboard, Cloudflare Turnstile visitor validation, daily
