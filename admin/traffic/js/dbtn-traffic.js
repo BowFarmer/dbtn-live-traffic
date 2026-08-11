@@ -10,7 +10,8 @@
  *   - Sub-tabs for 403-404, PHP Errors, PHP Slow, WAF Log, WP-Cron (lazy + cached).
  *   - "Hide static assets", "Hide me", and HTTP status client-side row filters.
  *   - Click an IP to copy it and look it up via ipinfo.io (auto-pauses live).
- *   - Click a path to show recent requests for the same path (query ignored).
+ *   - Click a time to copy the displayed row as tab-separated values.
+ *   - Click a path to copy it; Option-click also copies its referrer.
  */
 jQuery( document ).ready(
 	function ($) {
@@ -149,13 +150,6 @@ jQuery( document ).ready(
 			.removeClass( 'dbtn-lt-status-live' )
 			.addClass( 'dbtn-lt-status-paused' )
 			.html( '&#9646;&#9646; IP TRAFFIC' );
-		}
-
-		function setStatusPausedForUrlTraffic() {
-			$statusBadge
-				.removeClass( 'dbtn-lt-status-live' )
-				.addClass( 'dbtn-lt-status-paused' )
-				.html( '&#9646;&#9646; URL TRAFFIC' );
 		}
 
 		function resetLiveTrafficSorting() {
@@ -569,84 +563,96 @@ jQuery( document ).ready(
 				);
 		}
 
-		function pathWithoutQuery(value) {
-			const path = String( value || '' ).split( '#', 1 )[0].trim();
-
-			if (path.indexOf( '/?' ) === 0) {
-				return path;
+		function copyText(text) {
+			if (navigator.clipboard && window.isSecureContext) {
+				return navigator.clipboard.writeText( text );
 			}
 
-			return path.split( '?', 1 )[0];
+			return new Promise(
+				function (resolve, reject) {
+					const $textarea = $( '<textarea>' )
+						.val( text )
+						.css(
+							{
+								position: 'fixed',
+								top: '-9999px',
+								left: '-9999px'
+							}
+						)
+						.appendTo( 'body' );
+
+					$textarea[0].focus();
+					$textarea[0].select();
+
+					try {
+						if (document.execCommand( 'copy' )) {
+							resolve();
+						} else {
+							reject( new Error( 'Copy command was not accepted.' ) );
+						}
+					} catch (error) {
+						reject( error );
+					} finally {
+						$textarea.remove();
+					}
+				}
+			);
 		}
 
-		function showUrlTraffic(rawPath) {
-			const path = pathWithoutQuery( rawPath );
+		function showCopiedBadge(x, y) {
+			$( '.dbtn-lt-copied-badge' ).remove();
 
-			if ( ! path || path.charAt( 0 ) !== '/') {
-				return;
-			}
+			const $badge = $( '<span>', { class: 'dbtn-lt-copied-badge', role: 'status', text: 'Copied' } )
+				.css(
+					{
+						position: 'fixed',
+						zIndex: 100000,
+						padding: '4px 8px',
+						borderRadius: '4px',
+						background: '#1d2327',
+						color: '#fff',
+						fontSize: '12px',
+						lineHeight: '1.4',
+						pointerEvents: 'none',
+						boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
+					}
+				)
+				.appendTo( 'body' );
 
-			if (activeLogTab !== 'live') {
-				setActiveLogTab( 'live' );
-			}
-
-			if ( ! paused) {
-				$pauseBtn.trigger( 'click' );
-			}
-
-			setStatusPausedForUrlTraffic();
-
-			const url = (cfg.rest_url_traffic_url || routeUrl( 'url-traffic' )) +
-			'?path=' + encodeURIComponent( path ) +
-			'&lines=500&scan_lines=50000';
-
-			$content.html(
-				'<p class="dbtn-lt-loading">Loading access.log entries for <code>' +
-				$( '<span>' ).text( path ).html() +
-				'</code> (query strings ignored except for root-query URLs)…</p>'
+			$badge.css(
+				{
+					left: Math.max( 8, Math.min( x + 10, window.innerWidth - $badge.outerWidth() - 8 ) ),
+					top: Math.max( 8, Math.min( y + 10, window.innerHeight - $badge.outerHeight() - 8 ) )
+				}
 			);
 
-			fetch(
-				url,
-				{
-					credentials: 'same-origin',
-					headers: { 'X-WP-Nonce': cfg.nonce }
-				}
-			)
-				.then(
-					function (response) {
-						if ( ! response.ok) {
-							throw new Error( 'HTTP ' + response.status );
-						}
-						return response.json();
-					}
-				)
-				.then(
-					function (response) {
-						if ( ! response || typeof response.new_content !== 'string') {
-							throw new Error( 'Missing new_content in REST response.' );
-						}
+			setTimeout(
+				function () {
+					$badge.fadeOut( 150, function () { $badge.remove(); } );
+				},
+				850
+			);
+		}
 
-						if (response.nonce) {
-							cfg.nonce = response.nonce;
-						}
+		function rowClipboardText($row) {
+			const ip = $row.find( '.dbtn-lt-col-ip' ).clone()
+				.children( '.dbtn-lt-ip-card' ).remove().end()
+				.text().trim();
+			const path = $row.find( '.dbtn-lt-col-path' ).clone()
+				.children().remove().end()
+				.text().trim();
 
-						$content.html( response.new_content );
-						addCopyTrafficButton();
-						applyFilters();
-						$updated.text( 'Loaded URL traffic ' + new Date().toLocaleTimeString() );
-					}
-				)
-				.catch(
-					function (error) {
-						console.error( 'DBTN URL traffic fetch error:', error );
-						$content.html(
-							'<p class="dbtn-lt-error">Could not load access.log entries for <code>' +
-							$( '<span>' ).text( path ).html() +
-							'</code>.</p>'
-						);
-					}
-				);
+			return [
+				$row.find( '.dbtn-lt-col-time' ).text().trim(),
+				ip,
+				$row.find( '.dbtn-lt-col-geo' ).text().trim(),
+				$row.find( '.dbtn-lt-col-method' ).text().trim(),
+				path,
+				$row.find( '.dbtn-lt-col-path .dbtn-lt-referer' ).first().text().trim(),
+				$row.find( '.dbtn-lt-col-status' ).text().trim(),
+				$row.find( '.dbtn-lt-col-bytes' ).text().trim(),
+				$row.find( '.dbtn-lt-col-ua' ).text().trim()
+			].join( '\t' );
 		}
 
 		function startTimer() {
@@ -919,10 +925,33 @@ jQuery( document ).ready(
 
 		$( document ).on(
 			'click',
+			'td.dbtn-lt-col-time',
+			function (event) {
+				copyText( rowClipboardText( $( this ).closest( 'tr' ) ) )
+					.then( function () { showCopiedBadge( event.clientX, event.clientY ); } )
+					.catch( function (error) { console.error( 'DBTN row clipboard error:', error ); } );
+			}
+		);
+
+		$( document ).on(
+			'click',
 			'td.dbtn-lt-col-path',
-			function () {
-				const $td = $( this );
-				showUrlTraffic( $td.attr( 'title' ) || $td.text().trim().replace( /\t+/g, '\n' ) );
+			function (event) {
+				const $td      = $( this );
+				const path     = $td.attr( 'title' ) || $td.clone()
+					.children( '.dbtn-lt-referer, .dbtn-lt-host-warning' ).remove().end()
+					.text().trim();
+				const referrer = $td.find( '.dbtn-lt-referer' ).first().text().trim();
+
+				if ( ! path) {
+					return;
+				}
+
+				const clipboardText = event.altKey ? path + '\n' + (referrer || 'no referrer') : path;
+
+				copyText( clipboardText )
+					.then( function () { showCopiedBadge( event.clientX, event.clientY ); } )
+					.catch( function (error) { console.error( 'DBTN path clipboard error:', error ); } );
 			}
 		);
 
