@@ -334,7 +334,7 @@ final class DBTN_Traffic {
 	 */
 	public static function download_log_file(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You are not allowed to download log files.', 'dbtn-subscriber' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'You are not allowed to download log files.', 'dbtn-live-traffic' ), '', array( 'response' => 403 ) );
 		}
 
 		check_admin_referer( 'dbtn_traffic_download' );
@@ -348,7 +348,7 @@ final class DBTN_Traffic {
 		}
 
 		if ( '' === $filename || str_contains( $filename, "\0" ) || basename( $filename ) !== $filename ) {
-			wp_die( esc_html__( 'Invalid log filename.', 'dbtn-subscriber' ), '', array( 'response' => 400 ) );
+			wp_die( esc_html__( 'Invalid log filename.', 'dbtn-live-traffic' ), '', array( 'response' => 400 ) );
 		}
 
 		$logs_dir  = realpath( self::get_logs_dir() );
@@ -361,7 +361,7 @@ final class DBTN_Traffic {
 			|| ! is_file( $file_path )
 			|| ! is_readable( $file_path )
 		) {
-			wp_die( esc_html__( 'The requested log file is not available.', 'dbtn-subscriber' ), '', array( 'response' => 404 ) );
+			wp_die( esc_html__( 'The requested log file is not available.', 'dbtn-live-traffic' ), '', array( 'response' => 404 ) );
 		}
 
 		$file_size     = filesize( $file_path );
