@@ -51,7 +51,7 @@ final class DBTN_Traffic {
 	/**
 	 * Version for the Traffic Module.
 	 */
-	public const VERSION = '2026.08.10';
+	public const VERSION = '2026.08.12';
 
 	/**
 	 * REST namespace for all module routes.
