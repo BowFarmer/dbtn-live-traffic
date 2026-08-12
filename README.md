@@ -339,6 +339,10 @@ follows WordPress Coding Standards through PHPCS.
 
 ## Changelog
 
+### 1.0.18
+
+- The most recently selected Line Count setting is saved in local storage and reused in subsequent sessions.
+
 ### 1.0.17
 
 - Clicking a request path now copies it without filtering or pausing live traffic.
