@@ -24,7 +24,6 @@ jQuery( document ).ready(
 		}
 
 		let paused                 = false;
-		let ltLines                = parseInt( cfg.lines, 10 ) || 500;
 		let ltTimer                = null;
 		let activeLogTab           = 'live';
 		let loadedReports          = {};
@@ -35,6 +34,23 @@ jQuery( document ).ready(
 		let uaHeaderSortActive     = false;
 		let geoHeaderSortActive    = false;
 		const visitorCountInterval = 60000;
+		
+		const allowedLineCounts = [ 50, 100, 200, 500, 1000, 2500 ];
+		const linesStorageKey   = 'dbtn_live_traffic_lines:' + (cfg.current_user || 'default');
+		
+		let savedLines = 0;
+		
+		try {
+			savedLines = parseInt( window.localStorage.getItem( linesStorageKey ), 10 );
+		} catch (error) {
+			// Storage may be unavailable due to browser privacy settings.
+		}
+		
+		const configuredLines = parseInt( cfg.lines, 10 );
+		
+		let ltLines = allowedLineCounts.includes( savedLines )
+			? savedLines
+			: (allowedLineCounts.includes( configuredLines ) ? configuredLines : 500);		
 
 		const $content            = $( cfg.replace_obj );
 		const $pauseBtn           = $( '#dbtn-lt-pause' );
@@ -809,7 +825,18 @@ jQuery( document ).ready(
 		$linesSelect.on(
 			'change',
 			function () {
-				ltLines = parseInt( $( this ).val(), 10 ) || 500;
+				const selectedLines = parseInt( $( this ).val(), 10 );
+		
+				ltLines = allowedLineCounts.includes( selectedLines )
+					? selectedLines
+					: 500;
+		
+				try {
+					window.localStorage.setItem( linesStorageKey, String( ltLines ) );
+				} catch (error) {
+					// Continue normally if storage is unavailable.
+				}
+		
 				fetchTraffic();
 			}
 		);
