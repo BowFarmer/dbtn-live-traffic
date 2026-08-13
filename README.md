@@ -343,7 +343,9 @@ follows WordPress Coding Standards through PHPCS.
 ### 1.0.19
 
 - Added configurable live-traffic row highlights with Contains, Exact, and Regular Expression matching, selectable background colors, and optional bold text.
-- Converted the existing Fukuro and WooCommerce checkout colors into editable first-run defaults.
+
+![highlight ruels](docs/Livetraffic-Highlight-rules.webp)
+
 
 ### 1.0.18
 
