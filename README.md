@@ -1,6 +1,6 @@
 # DBTN Live Traffic
 
-Version 1.0.17
+Version 1.0.19
 
 DBTN Live Traffic is a standalone WordPress plugin that provides a real-time
 server-log dashboard, Cloudflare Turnstile visitor validation, daily
@@ -71,7 +71,7 @@ WordPress authentication.
 - Displays request time, IP or known WordPress username, GeoIP location,
   method, request path and referrer, response status, response size and request
   duration, and a summarized browser or bot user agent.
-- Highlights Turnstile-validated visitors and flags non-canonical hostnames.
+- Highlights Turnstile-validated visitors, supports configurable URL/text/regular-expression row highlights, and flags non-canonical hostnames.
 - Sorts the visible rows by IP, path, browser/bot, or location when the
   corresponding column header is selected.
 - Lets administrators inspect recent requests from a selected IP.
@@ -138,6 +138,7 @@ The **Live Traffic → Settings** page provides:
 - MaxMind account ID and license key fields.
 - A **Validate MaxMind** action that tests the entered, unsaved credentials.
 - An optional absolute logs-directory override.
+- Ordered traffic-row highlight rules with Contains, Exact, or Regular Expression matching, a background color, and optional bold text.
 - Configuration status and client-IP diagnostics.
 
 All settings are stored in the `dbtn_lt_settings` WordPress option. Secret
@@ -235,7 +236,7 @@ with the `dbtn_traffic_download` action and a download nonce.
 ## File structure
 
 The following map lists the plugin's first-party files that are loaded or
-served by version 1.0.17. The `vendor/` directory contains bundled third-party
+served by version 1.0.19. The `vendor/` directory contains bundled third-party
 Composer dependencies and is summarized separately.
 
 ```text
@@ -338,6 +339,11 @@ The codebase is analyzed with PHPStan at level 8 using WordPress stubs and
 follows WordPress Coding Standards through PHPCS.
 
 ## Changelog
+
+### 1.0.19
+
+- Added configurable live-traffic row highlights with Contains, Exact, and Regular Expression matching, selectable background colors, and optional bold text.
+- Converted the existing Fukuro and WooCommerce checkout colors into editable first-run defaults.
 
 ### 1.0.18
 

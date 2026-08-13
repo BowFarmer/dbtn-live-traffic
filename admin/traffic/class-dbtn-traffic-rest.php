@@ -584,6 +584,7 @@ final class DBTN_Traffic_REST {
 	 * @return string Rendered HTML table.
 	 */
 	private function render_access_rows( array $rows ): string {
+		$highlight_rules = DBTN_Traffic::get_highlight_rules();
 		ob_start();
 		?>
 		<table class="dbtn-lt-table striped">
@@ -631,17 +632,27 @@ final class DBTN_Traffic_REST {
 				$ua            = is_string( $r['ua'] ?? null ) ? $r['ua'] : '';
 				$ua_short      = is_string( $r['ua_short'] ?? null ) ? $r['ua_short'] : '';
 
-				if ( '/wp-json/dbtn/v2/cart/fukuro' === $path ) {
-					$row_classes[] = 'dbtn-lt-row-fukuro';
-				}
+				$highlight = $this->matching_highlight_rule( $path, $highlight_rules );
+				$row_style = '';
 
-				if ( '/?wc-ajax=checkout' === $path ) {
-					$row_classes[] = 'dbtn-lt-row-checkout';
+				if ( null !== $highlight ) {
+					$row_classes[] = 'dbtn-lt-row-highlight';
+
+					if ( ! empty( $highlight['bold'] ) ) {
+						$row_classes[] = 'dbtn-lt-row-highlight-bold';
+					}
+
+					if ( ! empty( $highlight['use_background'] ) && is_string( $highlight['background'] ?? null ) ) {
+						$background = sanitize_hex_color( $highlight['background'] );
+						if ( is_string( $background ) ) {
+							$row_style = ' style="--dbtn-lt-highlight-bg:' . esc_attr( $background ) . '"';
+						}
+					}
 				}
 
 				$row_class_attr = ! empty( $row_classes ) ? ' class="' . esc_attr( implode( ' ', $row_classes ) ) . '"' : '';
 				?>
-				<tr data-status="<?php echo esc_attr( $status ); ?>"<?php echo $row_class_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+				<tr data-status="<?php echo esc_attr( $status ); ?>"<?php echo $row_class_attr . $row_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 					<td class="dbtn-lt-col-time"><?php echo esc_html( $time_raw ); ?></td>
 					<td class="dbtn-lt-col-ip"><?php echo esc_html( $ip_display ); ?></td>
 					<td class="dbtn-lt-col-geo"><?php echo esc_html( $geo ); ?></td>
@@ -668,6 +679,51 @@ final class DBTN_Traffic_REST {
 		</table>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Find the first configured rule matching a request path.
+	 *
+	 * @param string                          $path  Request path and query.
+	 * @param array<int, array<string,mixed>> $rules Configured rules.
+	 * @return array<string,mixed>|null Matching rule.
+	 */
+	private function matching_highlight_rule( string $path, array $rules ): ?array {
+		foreach ( $rules as $rule ) {
+			if ( ! is_array( $rule ) ) {
+				continue;
+			}
+
+			$pattern    = is_string( $rule['pattern'] ?? null ) ? $rule['pattern'] : '';
+			$match_type = is_string( $rule['match_type'] ?? null ) ? $rule['match_type'] : 'contains';
+
+			if ( '' === $pattern ) {
+				continue;
+			}
+
+			$matches = 'exact' === $match_type
+				? 0 === strcasecmp( $path, $pattern )
+				: ( 'regex' === $match_type
+					? $this->highlight_regex_matches( $pattern, $path )
+					: false !== stripos( $path, $pattern ) );
+
+			if ( $matches ) {
+				return $rule;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Match a delimiter-free, case-insensitive regular expression.
+	 *
+	 * @param string $pattern Expression body.
+	 * @param string $path    Request path.
+	 * @return bool Whether the path matches.
+	 */
+	private function highlight_regex_matches( string $pattern, string $path ): bool {
+		return 1 === @preg_match( "\x01" . $pattern . "\x01iu", $path );
 	}
 
 	/**

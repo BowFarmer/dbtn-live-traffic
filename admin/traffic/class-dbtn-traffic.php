@@ -51,7 +51,7 @@ final class DBTN_Traffic {
 	/**
 	 * Version for the Traffic Module.
 	 */
-	public const VERSION = '2026.08.12';
+	public const VERSION = '2026.08.13';
 
 	/**
 	 * REST namespace for all module routes.
@@ -85,6 +85,36 @@ final class DBTN_Traffic {
 	 * @var string
 	 */
 	private static ?string $required_tab = null;
+
+	/**
+	 * Return saved row-highlight rules, with legacy highlights as first-run defaults.
+	 *
+	 * @return array<int, array<string, mixed>> Highlight rules.
+	 */
+	public static function get_highlight_rules(): array {
+		$opts = get_option( 'dbtn_lt_settings', array() );
+
+		if ( is_array( $opts ) && array_key_exists( 'highlight_rules', $opts ) ) {
+			return is_array( $opts['highlight_rules'] ) ? array_values( $opts['highlight_rules'] ) : array();
+		}
+
+		return array(
+			array(
+				'match_type'     => 'exact',
+				'pattern'        => '/wp-json/dbtn/v2/cart/fukuro',
+				'use_background' => true,
+				'background'     => '#9fcf88',
+				'bold'           => false,
+			),
+			array(
+				'match_type'     => 'exact',
+				'pattern'        => '/?wc-ajax=checkout',
+				'use_background' => true,
+				'background'     => '#dbeafe',
+				'bold'           => false,
+			),
+		);
+	}
 
 	/**
 	 * Wire up the module. Safe to call more than once.

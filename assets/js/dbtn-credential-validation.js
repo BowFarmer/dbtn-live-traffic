@@ -221,8 +221,69 @@
     });
   }
 
+  function initializeHighlightRules() {
+    const rules = document.getElementById("dbtn-highlight-rules");
+    const template = document.getElementById("dbtn-highlight-rule-template");
+    const addButton = document.getElementById("dbtn-add-highlight-rule");
+
+    if (!rules || !template || !addButton) {
+      return;
+    }
+
+    const body = rules.querySelector("tbody");
+
+    function updateBackgroundControl(row) {
+      const enabled = row.querySelector('input[name$="[use_background]"]');
+      const color = row.querySelector('input[type="color"]');
+
+      if (enabled && color) {
+        color.disabled = !enabled.checked;
+      }
+    }
+
+    function initializeRow(row) {
+      updateBackgroundControl(row);
+      row.addEventListener("change", function (event) {
+        if (event.target.matches('input[name$="[use_background]"]')) {
+          updateBackgroundControl(row);
+        }
+      });
+      row.querySelector(".dbtn-remove-highlight-rule").addEventListener("click", function () {
+        row.remove();
+      });
+      row.querySelector(".dbtn-move-highlight-rule-up").addEventListener("click", function () {
+        if (row.previousElementSibling) {
+          body.insertBefore(row, row.previousElementSibling);
+        }
+      });
+      row.querySelector(".dbtn-move-highlight-rule-down").addEventListener("click", function () {
+        if (row.nextElementSibling) {
+          body.insertBefore(row.nextElementSibling, row);
+        }
+      });
+    }
+
+    rules.querySelectorAll(".dbtn-highlight-rule-row").forEach(initializeRow);
+
+    addButton.addEventListener("click", function () {
+      const index = Number.parseInt(rules.dataset.nextIndex || "0", 10);
+      rules.dataset.nextIndex = String(index + 1);
+
+      const wrapper = document.createElement("tbody");
+      wrapper.innerHTML = template.innerHTML.replaceAll("__index__", String(index)).trim();
+      const row = wrapper.firstElementChild;
+
+      if (row) {
+        body.appendChild(row);
+        initializeRow(row);
+        row.querySelector('input[type="text"]').focus();
+      }
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initializeTurnstileValidation();
     initializeMaxmindValidation();
+    initializeHighlightRules();
   });
 })();

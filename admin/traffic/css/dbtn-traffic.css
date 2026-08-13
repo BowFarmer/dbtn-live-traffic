@@ -399,20 +399,13 @@ button#dbtn-lt-pause.button {
 	font-weight: 700;
 }
 
-.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-fukuro td {
-	background-color: #9fcf88;
+.dbtn-lt-table tbody tr.dbtn-lt-row-highlight td,
+.dbtn-lt-table tbody tr.dbtn-lt-row-highlight:hover td {
+	background-color: var(--dbtn-lt-highlight-bg);
 }
 
-.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-fukuro:hover td {
-	background-color: #8fc278;
-}
-
-.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-checkout td {
-	background-color: #dbeafe;
-}
-
-.dbtn-lt-table tbody tr.dbtn-lt-row-validated.dbtn-lt-row-checkout:hover td {
-	background-color: #bfdbfe;
+.dbtn-lt-table tbody tr.dbtn-lt-row-highlight-bold td {
+	font-weight: 700;
 }
 
 /* Smaller font for referer    */

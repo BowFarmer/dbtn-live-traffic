@@ -6,10 +6,8 @@
  *   - Live Traffic   (top-level menu, slug: dbtn-live-traffic)
  *   - Settings       (sub-menu, slug: dbtn-live-traffic-settings)
  *
- * Settings page allows entering Cloudflare Turnstile site key and secret key.
- * Those values are stored in the option `dbtn_lt_settings` and surfaced as the
- * DBTN_TURNSTILE_INVISIBLE_SITE_KEY / DBTN_TURNSTILE_INVISIBLE_SECRET_KEY
- * constants by the main plugin file on `plugins_loaded`.
+ * The settings page manages credentials, the logs directory, and configurable
+ * traffic-row highlight rules. Values are stored in `dbtn_lt_settings`.
  *
  * @package DBTN_Live_Traffic
  */
@@ -183,6 +181,21 @@ final class DBTN_LT_Admin {
 		);
 
 		add_settings_section(
+			'dbtn_lt_highlights_section',
+			__( 'Traffic Row Highlights', 'dbtn-live-traffic' ),
+			array( $this, 'render_highlights_section_description' ),
+			'dbtn-live-traffic-settings'
+		);
+
+		add_settings_field(
+			'highlight_rules',
+			__( 'Highlight Rules', 'dbtn-live-traffic' ),
+			array( $this, 'render_field_highlight_rules' ),
+			'dbtn-live-traffic-settings',
+			'dbtn_lt_highlights_section'
+		);
+
+		add_settings_section(
 			'dbtn_lt_geoip_section',
 			__( 'MaxMind GeoLite2 Database', 'dbtn-live-traffic' ),
 			array( $this, 'render_geoip_section_description' ),
@@ -218,7 +231,7 @@ final class DBTN_LT_Admin {
 	 * Sanitize settings values before saving.
 	 *
 	 * @param mixed $raw Raw submitted data.
-	 * @return array<string, string> Sanitized values.
+	 * @return array<string, mixed> Sanitized values.
 	 */
 	public function sanitize_settings( mixed $raw ): array {
 		$clean = array();
@@ -232,8 +245,65 @@ final class DBTN_LT_Admin {
 		$clean['logs_dir']             = sanitize_text_field( $raw['logs_dir'] ?? '' );
 		$clean['maxmind_account_id']   = sanitize_text_field( $raw['maxmind_account_id'] ?? '' );
 		$clean['maxmind_license_key']  = sanitize_text_field( $raw['maxmind_license_key'] ?? '' );
+		$clean['highlight_rules']      = array();
+
+		$rules = isset( $raw['highlight_rules'] ) && is_array( $raw['highlight_rules'] )
+			? array_slice( $raw['highlight_rules'], 0, 50 )
+			: array();
+
+		foreach ( $rules as $rule ) {
+			if ( ! is_array( $rule ) ) {
+				continue;
+			}
+
+			$pattern        = sanitize_text_field( $rule['pattern'] ?? '' );
+			$match_type     = sanitize_key( $rule['match_type'] ?? 'contains' );
+			$use_background = ! empty( $rule['use_background'] );
+			$background     = $use_background ? sanitize_hex_color( $rule['background'] ?? '' ) : '';
+			$bold           = ! empty( $rule['bold'] );
+
+			if ( '' === $pattern || ! in_array( $match_type, array( 'contains', 'exact', 'regex' ), true ) ) {
+				continue;
+			}
+
+			if ( 'regex' === $match_type && ! $this->is_valid_highlight_regex( $pattern ) ) {
+				add_settings_error(
+					self::OPTION,
+					'dbtn_lt_invalid_highlight_regex',
+					sprintf(
+						/* translators: %s: invalid regular expression. */
+						__( 'The highlight regular expression “%s” is invalid and was not saved.', 'dbtn-live-traffic' ),
+						$pattern
+					),
+					'error'
+				);
+				continue;
+			}
+
+			if ( ( $use_background && ! is_string( $background ) ) || ( ! $use_background && ! $bold ) ) {
+				continue;
+			}
+
+			$clean['highlight_rules'][] = array(
+				'match_type'     => $match_type,
+				'pattern'        => $pattern,
+				'use_background' => $use_background,
+				'background'     => is_string( $background ) ? $background : '',
+				'bold'           => $bold,
+			);
+		}
 
 		return $clean;
+	}
+
+	/**
+	 * Check a delimiter-free, case-insensitive regular expression.
+	 *
+	 * @param string $pattern Expression body.
+	 * @return bool Whether the expression compiles.
+	 */
+	private function is_valid_highlight_regex( string $pattern ): bool {
+		return false !== @preg_match( "\x01" . $pattern . "\x01iu", '' );
 	}
 
 	// ── Renderers ─────────────────────────────────────────────────────────────
@@ -387,6 +457,95 @@ final class DBTN_LT_Admin {
 			);
 			?>
 		</p>
+		<?php
+	}
+
+	/**
+	 * Explain configurable traffic-row highlighting.
+	 *
+	 * @return void
+	 */
+	public function render_highlights_section_description(): void {
+		?>
+		<p>
+			<?php esc_html_e( 'Highlight live-traffic rows whose request path matches a URL or text pattern. Rules are checked from top to bottom; the first match wins.', 'dbtn-live-traffic' ); ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Render configurable URL/text highlight rules.
+	 *
+	 * @return void
+	 */
+	public function render_field_highlight_rules(): void {
+		$rules = dbtn\Admin\Traffic\DBTN_Traffic::get_highlight_rules();
+		?>
+		<div id="dbtn-highlight-rules" data-next-index="<?php echo esc_attr( (string) count( $rules ) ); ?>">
+			<table class="widefat striped dbtn-highlight-rules-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Match', 'dbtn-live-traffic' ); ?></th>
+						<th><?php esc_html_e( 'URL, text, or expression', 'dbtn-live-traffic' ); ?></th>
+						<th><?php esc_html_e( 'Background', 'dbtn-live-traffic' ); ?></th>
+						<th><?php esc_html_e( 'Bold', 'dbtn-live-traffic' ); ?></th>
+						<th><span class="screen-reader-text"><?php esc_html_e( 'Actions', 'dbtn-live-traffic' ); ?></span></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $rules as $index => $rule ) : ?>
+						<?php $this->render_highlight_rule_row( (int) $index, $rule ); ?>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+			<p><button type="button" class="button" id="dbtn-add-highlight-rule"><?php esc_html_e( 'Add Highlight Rule', 'dbtn-live-traffic' ); ?></button></p>
+			<p class="description">
+				<?php esc_html_e( 'Contains and Exact are case-insensitive. Regular expressions are also case-insensitive; enter only the expression body, without /delimiters/. Saving an empty list disables custom highlights.', 'dbtn-live-traffic' ); ?>
+			</p>
+		</div>
+		<template id="dbtn-highlight-rule-template">
+			<?php $this->render_highlight_rule_row( '__index__', array() ); ?>
+		</template>
+		<?php
+	}
+
+	/**
+	 * Render one highlight-rule editor row.
+	 *
+	 * @param int|string          $index Rule index or template placeholder.
+	 * @param array<string,mixed> $rule  Rule values.
+	 * @return void
+	 */
+	private function render_highlight_rule_row( int|string $index, array $rule ): void {
+		$name           = self::OPTION . '[highlight_rules][' . $index . ']';
+		$match_type     = isset( $rule['match_type'] ) ? (string) $rule['match_type'] : 'contains';
+		$pattern        = isset( $rule['pattern'] ) ? (string) $rule['pattern'] : '';
+		$background     = isset( $rule['background'] ) && is_string( $rule['background'] ) && '' !== $rule['background']
+			? $rule['background']
+			: '#fff3a3';
+		$use_background = ! array_key_exists( 'use_background', $rule ) || ! empty( $rule['use_background'] );
+		$bold           = ! empty( $rule['bold'] );
+		?>
+		<tr class="dbtn-highlight-rule-row">
+			<td>
+				<select name="<?php echo esc_attr( $name ); ?>[match_type]" aria-label="<?php esc_attr_e( 'Match type', 'dbtn-live-traffic' ); ?>">
+					<option value="contains" <?php selected( $match_type, 'contains' ); ?>><?php esc_html_e( 'Contains', 'dbtn-live-traffic' ); ?></option>
+					<option value="exact" <?php selected( $match_type, 'exact' ); ?>><?php esc_html_e( 'Exact', 'dbtn-live-traffic' ); ?></option>
+					<option value="regex" <?php selected( $match_type, 'regex' ); ?>><?php esc_html_e( 'Regular expression', 'dbtn-live-traffic' ); ?></option>
+				</select>
+			</td>
+			<td><input type="text" class="regular-text" name="<?php echo esc_attr( $name ); ?>[pattern]" value="<?php echo esc_attr( $pattern ); ?>" placeholder="/checkout/ or fukuro"></td>
+			<td class="dbtn-highlight-background">
+				<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[use_background]" value="1" <?php checked( $use_background ); ?>> <span class="screen-reader-text"><?php esc_html_e( 'Use background color', 'dbtn-live-traffic' ); ?></span></label>
+				<input type="color" name="<?php echo esc_attr( $name ); ?>[background]" value="<?php echo esc_attr( $background ); ?>" aria-label="<?php esc_attr_e( 'Background color', 'dbtn-live-traffic' ); ?>">
+			</td>
+			<td><label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[bold]" value="1" <?php checked( $bold ); ?>> <span class="screen-reader-text"><?php esc_html_e( 'Use bold text', 'dbtn-live-traffic' ); ?></span></label></td>
+			<td class="dbtn-highlight-rule-actions">
+				<button type="button" class="button-link dbtn-move-highlight-rule-up" title="<?php esc_attr_e( 'Move rule up', 'dbtn-live-traffic' ); ?>" aria-label="<?php esc_attr_e( 'Move rule up', 'dbtn-live-traffic' ); ?>">&#8593;</button>
+				<button type="button" class="button-link dbtn-move-highlight-rule-down" title="<?php esc_attr_e( 'Move rule down', 'dbtn-live-traffic' ); ?>" aria-label="<?php esc_attr_e( 'Move rule down', 'dbtn-live-traffic' ); ?>">&#8595;</button>
+				<button type="button" class="button-link-delete dbtn-remove-highlight-rule"><?php esc_html_e( 'Remove', 'dbtn-live-traffic' ); ?></button>
+			</td>
+		</tr>
 		<?php
 	}
 
