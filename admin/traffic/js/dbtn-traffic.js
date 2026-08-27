@@ -35,6 +35,8 @@ jQuery( document ).ready(
 		let uaHeaderSortActive     = false;
 		let geoHeaderSortActive    = false;
 		let limitIP                = '';
+		let limitUserAgent         = '';
+		let limitLocation          = '';
 		const visitorCountInterval = 60000;
 		
 		const allowedLineCounts = [ 50, 100, 200, 500, 1000, 2500 ];
@@ -66,6 +68,8 @@ jQuery( document ).ready(
 		const $statusFilterSelect = $( '#dbtn-lt-status-filter' );
 		const $urlSearchInput     = $( '#dbtn-lt-url-search' );
 		const $urlSearchButton    = $( '#dbtn-lt-url-search-button' );
+		let   fKeyPressed         = false;
+		let   exactUrlMatch       = false;
 
 		if ( ! $content.length) {
 			console.error( 'DBTN Live Traffic: target not found:', cfg.replace_obj );
@@ -192,6 +196,9 @@ jQuery( document ).ready(
 				.removeAttr( 'aria-sort' );
 
 			updateIpHeader();
+			updatePathHeader();
+			updateUserAgentHeader();
+			updateLocationHeader();
 		}
 
 		function statusMatchesFilter(status, filter) {
@@ -220,6 +227,12 @@ jQuery( document ).ready(
 			return true;
 		}
 
+		function getPathFromCell($cell) {
+			return $cell.attr( 'title' ) || $cell.clone()
+				.children( '.dbtn-lt-referer, .dbtn-lt-host-warning' ).remove().end()
+				.text().trim();
+		}
+
 		function updateIpHeader() {
 			const $header = $content.find( 'th.db_col_header.dbtn-lt-col-ip' );
 
@@ -229,6 +242,42 @@ jQuery( document ).ready(
 				$header.text( 'IP-sorted' );
 			} else {
 				$header.text( 'IP' );
+			}
+		}
+
+		function updatePathHeader() {
+			const $header = $content.find( 'th.db_col_header.dbtn-lt-col-path' );
+		
+			if (exactUrlMatch && urlSearchTerm) {
+				$header.text( 'Path-' + urlSearchTerm );
+			} else if (pathHeaderSortActive) {
+				$header.text( 'Path-sorted' );
+			} else {
+				$header.text( 'Path' );
+			}
+		}
+
+		function updateUserAgentHeader() {
+			const $header = $content.find( 'th.db_col_header.dbtn-lt-col-ua' );
+
+			if (limitUserAgent) {
+				$header.text( 'Browser/Bot-' + limitUserAgent );
+			} else if (uaHeaderSortActive) {
+				$header.text( 'Browser/Bot-sorted' );
+			} else {
+				$header.text( 'Browser / Bot' );
+			}
+		}
+
+		function updateLocationHeader() {
+			const $header = $content.find( 'th.db_col_header.dbtn-lt-col-geo' );
+
+			if (limitLocation) {
+				$header.text( 'Location-' + limitLocation );
+			} else if (geoHeaderSortActive) {
+				$header.text( 'Location-sorted' );
+			} else {
+				$header.text( 'Location' );
 			}
 		}
 
@@ -242,10 +291,7 @@ jQuery( document ).ready(
 			$content.find( '.dbtn-lt-table tbody tr' ).each(
 				function () {
 					const $row = $( this );
-
-					const path =
-					$row.find( '.dbtn-lt-col-path' ).attr( 'title' ) ||
-					$row.find( '.dbtn-lt-col-path' ).text();
+					const path = getPathFromCell( $row.find( '.dbtn-lt-col-path' ) );
 
 					const ipText =
 					$row.find( '.dbtn-lt-col-ip' ).attr( 'title' ) ||
@@ -254,34 +300,50 @@ jQuery( document ).ready(
 					const statusText =
 					$row.attr( 'data-status' ) ||
 					$row.find( '.dbtn-lt-col-status' ).text();
+					const userAgentText = $row.find( '.dbtn-lt-col-ua' ).text().trim();
+					const locationText  = $row.find( '.dbtn-lt-col-geo' ).text().trim();
 
 					const isStatic      = hideStatic && STATIC_EXT_RE.test( path );
 					const isMe          = hideMe && ipText.toLowerCase().includes( currentUser.toLowerCase() );
 					const isWpJson      = hideWpJson && /^\/wp-json\/dbtn\/v2\/validation(?:\/|[?#]|$)/i.test( path );
 					const isStatusMatch = statusMatchesFilter( statusText, statusFilter );
-					const isUrlMatch    = ! urlNeedle || String( path ).toLocaleLowerCase().includes( urlNeedle );
+					const isUrlMatch    = ! urlSearchTerm ||
+						(exactUrlMatch
+							? path === urlSearchTerm
+							: String( path ).toLocaleLowerCase().includes( urlNeedle ));
 					const rowIP         = extractIp( ipText );
 					const isIpMatch     = ! limitIP || rowIP === limitIP;
+					const isUaMatch     = ! limitUserAgent || userAgentText === limitUserAgent;
+					const isGeoMatch    = ! limitLocation || locationText === limitLocation;
 
-					$row.toggle( ! isStatic && ! isMe && ! isWpJson && isStatusMatch && isUrlMatch && isIpMatch );
+					$row.toggle( ! isStatic && ! isMe && ! isWpJson && isStatusMatch && isUrlMatch && isIpMatch && isUaMatch && isGeoMatch );
 				}
 			);
 
 			updateIpHeader();
+			updatePathHeader();
+			updateUserAgentHeader();
+			updateLocationHeader();
 		}
 
 		function runUrlSearch() {
 			urlSearchTerm = String( $urlSearchInput.val() || '' ).trim();
+			exactUrlMatch = false;
 			$urlSearchButton.toggleClass( 'is-active', '' !== urlSearchTerm );
+			applyFilters();
+		}
+
+		function clearUrlSearch() {
+			urlSearchTerm = '';
+			exactUrlMatch = false;
+			$urlSearchInput.val( '' );
+			$urlSearchButton.removeClass( 'is-active' );
 			applyFilters();
 		}
 
 		function toggleUrlSearch() {
 			if ('' !== urlSearchTerm) {
-				urlSearchTerm = '';
-				$urlSearchInput.val( '' );
-				$urlSearchButton.removeClass( 'is-active' );
-				applyFilters();
+				clearUrlSearch();
 				return;
 			}
 
@@ -918,9 +980,8 @@ jQuery( document ).ready(
 					return;
 				}
 
-				if (limitIP) {
-					limitIP = '';
-					applyFilters();
+				if (exactUrlMatch && urlSearchTerm) {
+					clearUrlSearch();
 					return;
 				}
 
@@ -972,6 +1033,10 @@ jQuery( document ).ready(
 				$tbody.append( rows );
 				$header.text( 'Path-sorted' ).attr( 'aria-sort', 'ascending' );
 				pathHeaderSortActive = true;
+				updateIpHeader();
+				updatePathHeader();
+				updateUserAgentHeader();
+				updateLocationHeader();
 			}
 		);
 
@@ -985,14 +1050,38 @@ jQuery( document ).ready(
 			}
 		);
 
+
+		$( document ).on(
+			'keydown',
+			function (event) {
+				if (event.key && 'f' === event.key.toLowerCase()) {
+					fKeyPressed = true;
+				}
+			}
+		);
+		
+		$( document ).on(
+			'keyup',
+			function (event) {
+				if (event.key && 'f' === event.key.toLowerCase()) {
+					fKeyPressed = false;
+				}
+			}
+		);
+
+		$( window ).on(
+			'blur',
+			function () {
+				fKeyPressed = false;
+			}
+		);
+
 		$( document ).on(
 			'click',
 			'td.dbtn-lt-col-path',
 			function (event) {
 				const $td      = $( this );
-				const path     = $td.attr( 'title' ) || $td.clone()
-					.children( '.dbtn-lt-referer, .dbtn-lt-host-warning' ).remove().end()
-					.text().trim();
+				const path     = getPathFromCell( $td );
 				const referrer = $td.find( '.dbtn-lt-referer' ).first().text().trim();
 
 				if ( ! path) {
@@ -1004,6 +1093,18 @@ jQuery( document ).ready(
 				copyText( clipboardText )
 					.then( function () { showCopiedBadge( event.clientX, event.clientY ); } )
 					.catch( function (error) { console.error( 'DBTN path clipboard error:', error ); } );
+					
+				if (fKeyPressed) {
+					if (exactUrlMatch && urlSearchTerm === path) {
+						clearUrlSearch();
+						return;
+					} else {
+						urlSearchTerm = path;
+						exactUrlMatch = true;
+						$urlSearchButton.addClass( 'is-active' );
+						applyFilters();
+					}
+				}
 			}
 		);
 
@@ -1103,6 +1204,9 @@ jQuery( document ).ready(
 				$header.text( 'IP-sorted' ).attr( 'aria-sort', 'ascending' );
 				ipHeaderSortActive = true;
 				updateIpHeader();
+				updatePathHeader();
+				updateUserAgentHeader();
+				updateLocationHeader();
 			}
 		);
 
@@ -1118,6 +1222,12 @@ jQuery( document ).ready(
 				const $table  = $header.closest( '.dbtn-lt-table' );
 
 				if ( ! $table.length || $table.hasClass( 'dbtn-lt-ip-traffic-table' )) {
+					return;
+				}
+
+				if (limitUserAgent) {
+					limitUserAgent = '';
+					applyFilters();
 					return;
 				}
 
@@ -1169,6 +1279,10 @@ jQuery( document ).ready(
 					.removeAttr( 'aria-sort' );
 				$header.text( 'Browser/Bot-sorted' ).attr( 'aria-sort', 'ascending' );
 				uaHeaderSortActive = true;
+				updateIpHeader();
+				updatePathHeader();
+				updateUserAgentHeader();
+				updateLocationHeader();
 			}
 		);
 
@@ -1184,6 +1298,12 @@ jQuery( document ).ready(
 				const $table  = $header.closest( '.dbtn-lt-table' );
 
 				if ( ! $table.length || $table.hasClass( 'dbtn-lt-ip-traffic-table' )) {
+					return;
+				}
+
+				if (limitLocation) {
+					limitLocation = '';
+					applyFilters();
 					return;
 				}
 
@@ -1235,6 +1355,48 @@ jQuery( document ).ready(
 					.removeAttr( 'aria-sort' );
 				$header.text( 'Location-sorted' ).attr( 'aria-sort', 'ascending' );
 				geoHeaderSortActive = true;
+				updateIpHeader();
+				updatePathHeader();
+				updateUserAgentHeader();
+				updateLocationHeader();
+			}
+		);
+
+		$( document ).on(
+			'click',
+			'td.dbtn-lt-col-ua',
+			function () {
+				if ( ! fKeyPressed) {
+					return;
+				}
+
+				const clickedUserAgent = $( this ).text().trim();
+
+				if ( ! clickedUserAgent) {
+					return;
+				}
+
+				limitUserAgent = limitUserAgent === clickedUserAgent ? '' : clickedUserAgent;
+				applyFilters();
+			}
+		);
+
+		$( document ).on(
+			'click',
+			'td.dbtn-lt-col-geo',
+			function () {
+				if ( ! fKeyPressed) {
+					return;
+				}
+
+				const clickedLocation = $( this ).text().trim();
+
+				if ( ! clickedLocation) {
+					return;
+				}
+
+				limitLocation = limitLocation === clickedLocation ? '' : clickedLocation;
+				applyFilters();
 			}
 		);
 
@@ -1251,7 +1413,7 @@ jQuery( document ).ready(
 					return;
 				}
 
-				if (e.altKey) {
+				if (fKeyPressed) {
 					const rawText  = $td.attr( 'title' ) || $td.text();
 					const clickedIP = extractIp( rawText );
 
