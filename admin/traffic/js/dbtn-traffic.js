@@ -8,7 +8,7 @@
  * Behavior preserved from the original:
  *   - Live polling of access.log every refresh_rate ms (pause/resume).
  *   - Sub-tabs for 403-404, PHP Errors, PHP Slow, WAF Log, WP-Cron (lazy + cached).
- *   - "Hide static assets", "Hide me", and HTTP status client-side row filters.
+ *   - Static asset, current user, HTTP status, and validation-type row filters.
  *   - Click an IP to copy it and look it up via ipinfo.io (auto-pauses live).
  *   - Option/Alt-click an IP to filter live traffic to that IP.
  *   - Click a time to copy the displayed row as tab-separated values.
@@ -66,6 +66,7 @@ jQuery( document ).ready(
 		const $hideMeChk          = $( '#dbtn-lt-hide-me' );
 		const $hideWpJsonChk      = $( '#dbtn-lt-hide-wp-json' );
 		const $statusFilterSelect = $( '#dbtn-lt-status-filter' );
+		const $typeFilterSelect   = $( '#dbtn-lt-type-filter' );
 		const $urlSearchInput     = $( '#dbtn-lt-url-search' );
 		const $urlSearchButton    = $( '#dbtn-lt-url-search-button' );
 		let   fKeyPressed         = false;
@@ -142,6 +143,7 @@ jQuery( document ).ready(
 			$hideMeChk.prop( 'disabled', ! isLive );
 			$hideWpJsonChk.prop( 'disabled', ! isLive );
 			$statusFilterSelect.prop( 'disabled', ! isLive );
+			$typeFilterSelect.prop( 'disabled', ! isLive );
 			$urlSearchInput.prop( 'disabled', ! isLive );
 			$urlSearchButton.prop( 'disabled', ! isLive );
 		}
@@ -286,6 +288,7 @@ jQuery( document ).ready(
 			const hideMe       = $hideMeChk.is( ':checked' );
 			const hideWpJson   = $hideWpJsonChk.is( ':checked' );
 			const statusFilter = $statusFilterSelect.val() || 'all';
+			const typeFilter   = $typeFilterSelect.val() || 'all';
 			const urlNeedle    = urlSearchTerm.toLocaleLowerCase();
 
 			$content.find( '.dbtn-lt-table tbody tr' ).each(
@@ -307,6 +310,10 @@ jQuery( document ).ready(
 					const isMe          = hideMe && ipText.toLowerCase().includes( currentUser.toLowerCase() );
 					const isWpJson      = hideWpJson && /^\/wp-json\/dbtn\/v2\/validation(?:\/|[?#]|$)/i.test( path );
 					const isStatusMatch = statusMatchesFilter( statusText, statusFilter );
+					const isValidated   = $row.attr( 'data-validated' ) === '1';
+					const isTypeMatch   = typeFilter === 'all' ||
+						(typeFilter === 'bots' && ! isValidated) ||
+						(typeFilter === 'verified' && isValidated);
 					const isUrlMatch    = ! urlSearchTerm ||
 						(exactUrlMatch
 							? path === urlSearchTerm
@@ -316,7 +323,7 @@ jQuery( document ).ready(
 					const isUaMatch     = ! limitUserAgent || userAgentText === limitUserAgent;
 					const isGeoMatch    = ! limitLocation || locationText === limitLocation;
 
-					$row.toggle( ! isStatic && ! isMe && ! isWpJson && isStatusMatch && isUrlMatch && isIpMatch && isUaMatch && isGeoMatch );
+					$row.toggle( ! isStatic && ! isMe && ! isWpJson && isStatusMatch && isTypeMatch && isUrlMatch && isIpMatch && isUaMatch && isGeoMatch );
 				}
 			);
 
@@ -902,6 +909,7 @@ jQuery( document ).ready(
 		$hideMeChk.on( 'change', applyFilters );
 		$hideWpJsonChk.on( 'change', applyFilters );
 		$statusFilterSelect.on( 'change', applyFilters );
+		$typeFilterSelect.on( 'change', applyFilters );
 
 		$linesSelect.on(
 			'change',

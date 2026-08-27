@@ -51,7 +51,7 @@ final class DBTN_Traffic {
 	/**
 	 * Version for the Traffic Module.
 	 */
-	public const VERSION = '2026.08.13';
+	public const VERSION = '2026.08.27';
 
 	/**
 	 * REST namespace for all module routes.
@@ -212,6 +212,12 @@ final class DBTN_Traffic {
 							<option value="2xx">200s</option>
 							<option value="3xx">300s</option>
 							<option value="4xx">400s</option>
+						</select>
+						<label for="dbtn-lt-type-filter">Type:</label>
+						<select id="dbtn-lt-type-filter">
+							<option value="all" selected>All</option>
+							<option value="bots">Bots</option>
+							<option value="verified">Verified</option>
 						</select>
 						<label for="dbtn-lt-lines">Lines:</label>
 						<select id="dbtn-lt-lines">

@@ -1,6 +1,6 @@
 # DBTN Live Traffic
 
-Version 1.0.19
+Version 1.0.20
 
 DBTN Live Traffic is a standalone WordPress plugin that provides a real-time
 server-log dashboard, Cloudflare Turnstile visitor validation, daily
@@ -236,7 +236,7 @@ with the `dbtn_traffic_download` action and a download nonce.
 ## File structure
 
 The following map lists the plugin's first-party files that are loaded or
-served by version 1.0.19. The `vendor/` directory contains bundled third-party
+served by version 1.0.20. The `vendor/` directory contains bundled third-party
 Composer dependencies and is summarized separately.
 
 ```text
@@ -339,6 +339,14 @@ The codebase is analyzed with PHPStan at level 8 using WordPress stubs and
 follows WordPress Coding Standards through PHPCS.
 
 ## Changelog
+
+### 1.0.20
+
+- Added F-key click filtering: hold **F** and click an IP address, request
+  path, browser/bot, or location to show only matching traffic; repeat the
+  action to clear that filter.
+- Added a **Type** selector with **All**, **Bots**, and **Verified** options for
+  viewing all traffic, unverified traffic, or Turnstile-verified visitors.
 
 ### 1.0.19
 

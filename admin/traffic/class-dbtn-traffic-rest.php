@@ -652,7 +652,7 @@ final class DBTN_Traffic_REST {
 
 				$row_class_attr = ! empty( $row_classes ) ? ' class="' . esc_attr( implode( ' ', $row_classes ) ) . '"' : '';
 				?>
-				<tr data-status="<?php echo esc_attr( $status ); ?>"<?php echo $row_class_attr . $row_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+				<tr data-status="<?php echo esc_attr( $status ); ?>" data-validated="<?php echo esc_attr( $validated ? '1' : '0' ); ?>"<?php echo $row_class_attr . $row_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 					<td class="dbtn-lt-col-time"><?php echo esc_html( $time_raw ); ?></td>
 					<td class="dbtn-lt-col-ip"><?php echo esc_html( $ip_display ); ?></td>
 					<td class="dbtn-lt-col-geo"><?php echo esc_html( $geo ); ?></td>

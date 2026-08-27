@@ -205,7 +205,8 @@ button#dbtn-lt-pause.button {
 }
 
 #dbtn-lt-lines,
-#dbtn-lt-status-filter {
+#dbtn-lt-status-filter,
+#dbtn-lt-type-filter {
 	border-radius: 4px;
 	min-height: 30px;
 	height: 30px;
@@ -216,6 +217,10 @@ button#dbtn-lt-pause.button {
 
 #dbtn-lt-status-filter {
 	width: 72px;
+}
+
+#dbtn-lt-type-filter {
+	width: 90px;
 }
 
 #dbtn-lt-lines {
