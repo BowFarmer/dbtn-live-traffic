@@ -10,6 +10,7 @@
  *   - Sub-tabs for 403-404, PHP Errors, PHP Slow, WAF Log, WP-Cron (lazy + cached).
  *   - "Hide static assets", "Hide me", and HTTP status client-side row filters.
  *   - Click an IP to copy it and look it up via ipinfo.io (auto-pauses live).
+ *   - Option/Alt-click an IP to filter live traffic to that IP.
  *   - Click a time to copy the displayed row as tab-separated values.
  *   - Click a path to copy it; Option-click also copies its referrer.
  */
@@ -33,6 +34,7 @@ jQuery( document ).ready(
 		let pathHeaderSortActive   = false;
 		let uaHeaderSortActive     = false;
 		let geoHeaderSortActive    = false;
+		let limitIP                = '';
 		const visitorCountInterval = 60000;
 		
 		const allowedLineCounts = [ 50, 100, 200, 500, 1000, 2500 ];
@@ -175,7 +177,6 @@ jQuery( document ).ready(
 			geoHeaderSortActive  = false;
 
 			$content.find( 'th.db_col_header.dbtn-lt-col-ip' )
-				.text( 'IP' )
 				.removeAttr( 'aria-sort' );
 
 			$content.find( 'th.db_col_header.dbtn-lt-col-path' )
@@ -189,6 +190,8 @@ jQuery( document ).ready(
 			$content.find( 'th.db_col_header.dbtn-lt-col-geo' )
 				.text( 'Location' )
 				.removeAttr( 'aria-sort' );
+
+			updateIpHeader();
 		}
 
 		function statusMatchesFilter(status, filter) {
@@ -215,6 +218,18 @@ jQuery( document ).ready(
 			}
 
 			return true;
+		}
+
+		function updateIpHeader() {
+			const $header = $content.find( 'th.db_col_header.dbtn-lt-col-ip' );
+
+			if (limitIP) {
+				$header.text( 'IP-' + limitIP );
+			} else if (ipHeaderSortActive) {
+				$header.text( 'IP-sorted' );
+			} else {
+				$header.text( 'IP' );
+			}
 		}
 
 		function applyFilters() {
@@ -245,10 +260,14 @@ jQuery( document ).ready(
 					const isWpJson      = hideWpJson && /^\/wp-json\/dbtn\/v2\/validation(?:\/|[?#]|$)/i.test( path );
 					const isStatusMatch = statusMatchesFilter( statusText, statusFilter );
 					const isUrlMatch    = ! urlNeedle || String( path ).toLocaleLowerCase().includes( urlNeedle );
+					const rowIP         = extractIp( ipText );
+					const isIpMatch     = ! limitIP || rowIP === limitIP;
 
-					$row.toggle( ! isStatic && ! isMe && ! isWpJson && isStatusMatch && isUrlMatch );
+					$row.toggle( ! isStatic && ! isMe && ! isWpJson && isStatusMatch && isUrlMatch && isIpMatch );
 				}
 			);
+
+			updateIpHeader();
 		}
 
 		function runUrlSearch() {
@@ -899,6 +918,12 @@ jQuery( document ).ready(
 					return;
 				}
 
+				if (limitIP) {
+					limitIP = '';
+					applyFilters();
+					return;
+				}
+
 				if (pathHeaderSortActive) {
 					resetLiveTrafficSorting();
 
@@ -1023,6 +1048,12 @@ jQuery( document ).ready(
 					return;
 				}
 
+				if ( limitIP ) {
+					limitIP = '';
+					applyFilters();
+					return;
+				}
+
 				if (ipHeaderSortActive) {
 					resetLiveTrafficSorting();
 
@@ -1071,6 +1102,7 @@ jQuery( document ).ready(
 					.removeAttr( 'aria-sort' );
 				$header.text( 'IP-sorted' ).attr( 'aria-sort', 'ascending' );
 				ipHeaderSortActive = true;
+				updateIpHeader();
 			}
 		);
 
@@ -1216,6 +1248,19 @@ jQuery( document ).ready(
 				$( e.target ).hasClass( 'dbtn-lt-ip-close' ) ||
 				$( e.target ).closest( '.dbtn-lt-ip-card' ).length
 				) {
+					return;
+				}
+
+				if (e.altKey) {
+					const rawText  = $td.attr( 'title' ) || $td.text();
+					const clickedIP = extractIp( rawText );
+
+					if ( ! clickedIP) {
+						return;
+					}
+
+					limitIP = limitIP === clickedIP ? '' : clickedIP;
+					applyFilters();
 					return;
 				}
 
