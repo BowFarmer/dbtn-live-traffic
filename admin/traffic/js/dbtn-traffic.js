@@ -78,7 +78,9 @@ jQuery( document ).ready(
 		}
 
 		const STATIC_EXT_RE = /\.(jpe?g|webp|png|gif|svg|ico|bmp|tiff?|js|mjs|ftl|css|woff2?|ttf|eot|otf|map|txt|xml|pdf|zip|gz|tar|icc|wasm)(\?|#|$)/i;
-		const currentUser   = cfg.current_user;
+		const adminIp       = String(
+			cfg.admin_ip || $hideMeChk.attr( 'data-dbtn-admin-ip' ) || ''
+		).trim().toLowerCase();
 
 		const reportTabs = [
 		{ id: 'live', label: 'Live Traffic', url: cfg.rest_url },
@@ -306,8 +308,9 @@ jQuery( document ).ready(
 					const userAgentText = $row.find( '.dbtn-lt-col-ua' ).text().trim();
 					const locationText  = $row.find( '.dbtn-lt-col-geo' ).text().trim();
 
+					const rowIP         = extractIp( ipText );
 					const isStatic      = hideStatic && STATIC_EXT_RE.test( path );
-					const isMe          = hideMe && ipText.toLowerCase().includes( currentUser.toLowerCase() );
+					const isMe          = hideMe && '' !== adminIp && rowIP.toLowerCase() === adminIp;
 					const isWpJson      = hideWpJson && /^\/wp-json\/dbtn\/v2\/validation(?:\/|[?#]|$)/i.test( path );
 					const isStatusMatch = statusMatchesFilter( statusText, statusFilter );
 					const isValidated   = $row.attr( 'data-validated' ) === '1';
@@ -318,7 +321,6 @@ jQuery( document ).ready(
 						(exactUrlMatch
 							? path === urlSearchTerm
 							: String( path ).toLocaleLowerCase().includes( urlNeedle ));
-					const rowIP         = extractIp( ipText );
 					const isIpMatch     = ! limitIP || rowIP === limitIP;
 					const isUaMatch     = ! limitUserAgent || userAgentText === limitUserAgent;
 					const isGeoMatch    = ! limitLocation || locationText === limitLocation;
@@ -473,7 +475,7 @@ jQuery( document ).ready(
 						applyFilters();
 
 						const now = new Date();
-						$updated.text( 'Updated ' + now.toLocaleTimeString() );
+						$updated.text( 'Traffic updated ' + now.toLocaleTimeString() );
 					}
 				)
 				.catch(

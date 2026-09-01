@@ -51,7 +51,7 @@ final class DBTN_Traffic {
 	/**
 	 * Version for the Traffic Module.
 	 */
-	public const VERSION = '2026.08.27';
+	public const VERSION = '2026.08.31';
 
 	/**
 	 * REST namespace for all module routes.
@@ -158,6 +158,10 @@ final class DBTN_Traffic {
 		$geo_version          = \dbtn\Support\DBTN_Geoip_Update::get_version();
 		$geo_update_available = false;
 
+		// IP of the admin currently viewing this panel; used by the "Hide me" filter.
+		$admin_ip      = \dbtn\Support\DBTN_Utilities::get_client_ip();
+		$hide_me_label = '' !== $admin_ip ? 'Hide my ip-' . $admin_ip : 'Hide my ip';
+
 		try {
 			$geo_update_available = \dbtn\Support\DBTN_Geoip_Update::has_newer_version();
 			if ( $geo_update_available ) {
@@ -199,8 +203,8 @@ final class DBTN_Traffic {
 							Hide static assets
 						</label>
 						<label class="dbtn-lt-filter-label">
-							<input type="checkbox" id="dbtn-lt-hide-me" checked>
-							Hide me
+							<input type="checkbox" id="dbtn-lt-hide-me" data-dbtn-admin-ip="<?php echo esc_attr( $admin_ip ); ?>" checked>
+							<?php echo esc_html( $hide_me_label ); ?>
 						</label>
 						<label class="dbtn-lt-filter-label">
 							<input type="checkbox" id="dbtn-lt-hide-wp-json" checked>
@@ -326,6 +330,7 @@ final class DBTN_Traffic {
 				'replace_obj'          => '#dbtn-live-traffic-content',
 				'nonce'                => wp_create_nonce( 'wp_rest' ),
 				'current_user'         => wp_get_current_user()->user_login,
+				'admin_ip'             => \dbtn\Support\DBTN_Utilities::get_client_ip(),
 				'refresh_rate'         => 5000,
 				'lines'                => $lt_lines,
 			)

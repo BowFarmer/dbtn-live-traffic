@@ -4,7 +4,7 @@ Contributors: your-wordpress-org-username
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.20
+Stable tag: 1.0.21
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -349,6 +349,11 @@ The codebase is analyzed with PHPStan at level 8 using WordPress stubs and
 follows WordPress Coding Standards through PHPCS.
 
 ## Changelog
+
+### 1.0.21
+
+- Renamed 'Hide Me' filter to 'Hide my ip' filter in Live Traffic. This filter hides
+  traffic from the same ip as the user watching Live Traffic.
 
 ### 1.0.20
 

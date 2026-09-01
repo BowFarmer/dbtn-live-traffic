@@ -1,6 +1,6 @@
 # DBTN Live Traffic
 
-Version 1.0.20
+Version 1.0.21
 
 DBTN Live Traffic is a standalone WordPress plugin that provides a real-time
 server-log dashboard, Cloudflare Turnstile visitor validation, daily
@@ -339,6 +339,11 @@ The codebase is analyzed with PHPStan at level 8 using WordPress stubs and
 follows WordPress Coding Standards through PHPCS.
 
 ## Changelog
+
+### 1.0.21
+
+- Renamed 'Hide Me' filter to 'Hide my ip' filter in Live Traffic. This filter hides
+  traffic from the same ip as the user watching Live Traffic.
 
 ### 1.0.20
 
